@@ -63,6 +63,37 @@ const Badge = ({ text, color = "#3b82f6" }) => (
   <span style={{ background: color + "22", color, border: `1px solid ${color}55`, borderRadius: 6, padding: "2px 8px", fontSize: 12, fontWeight: 600, margin: 2, display: "inline-block" }}>{text}</span>
 );
 
+// URL routing helpers
+const getBasePath = () => {
+  // Support GitHub Pages subdirectory
+  const base = document.querySelector("base")?.getAttribute("href") || "/";
+  return base.endsWith("/") ? base.slice(0, -1) : base;
+};
+
+const parseUrl = () => {
+  const basePath = getBasePath();
+  const path = window.location.pathname.replace(basePath, "") || "/";
+
+  if (path === "/" || path === "") {
+    return { view: "decoder", uwp: null };
+  }
+  if (path === "/recent") {
+    return { view: "saved", uwp: null };
+  }
+  const planetMatch = path.match(/^\/planet\/([A-Za-z0-9-]+)$/);
+  if (planetMatch) {
+    return { view: "planet", uwp: planetMatch[1].toUpperCase() };
+  }
+  return { view: "decoder", uwp: null };
+};
+
+const buildUrl = (view, uwp = null) => {
+  const basePath = getBasePath();
+  if (view === "saved") return `${basePath}/recent`;
+  if (view === "planet" && uwp) return `${basePath}/planet/${uwp.toUpperCase()}`;
+  return basePath || "/";
+};
+
 export default function App() {
   const { t, lang } = useTranslation();
   const [uwp, setUwp] = useState("");
@@ -74,6 +105,7 @@ export default function App() {
   const [scanning, setScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
   const fileInputRef = useRef(null);
+  const isInitialLoad = useRef(true);
 
   // Get translated game data
   const STARPORT = useMemo(() => getSTARPORT(t)[lang], [lang, t]);
@@ -105,18 +137,84 @@ export default function App() {
     }
   }, [recentPlanets, dataLoaded]);
 
+  // Parse URL on initial load and load planet if needed
+  useEffect(() => {
+    if (!dataLoaded) return;
+
+    const { view: urlView, uwp: urlUwp } = parseUrl();
+
+    if (urlView === "planet" && urlUwp) {
+      // Try to find planet in recent list
+      const planet = recentPlanets.find(p => p.uwp.toUpperCase() === urlUwp);
+      if (planet) {
+        setName(planet.name);
+        setUwp(planet.uwp);
+        setZoneInput(planet.zone || "V");
+        setView("planet");
+      } else {
+        // Planet not in recent, just set UWP
+        setUwp(urlUwp);
+        setName("");
+        setZoneInput("V");
+        setView("planet");
+      }
+    } else {
+      setView(urlView);
+    }
+    isInitialLoad.current = false;
+  }, [dataLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const { view: urlView, uwp: urlUwp } = parseUrl();
+
+      if (urlView === "planet" && urlUwp) {
+        const planet = recentPlanets.find(p => p.uwp.toUpperCase() === urlUwp);
+        if (planet) {
+          setName(planet.name);
+          setUwp(planet.uwp);
+          setZoneInput(planet.zone || "V");
+        } else {
+          setUwp(urlUwp);
+          setName("");
+          setZoneInput("V");
+        }
+        setView("planet");
+      } else if (urlView === "saved") {
+        setView("saved");
+      } else {
+        setName("");
+        setUwp("");
+        setZoneInput("V");
+        setScanStatus("");
+        setView("decoder");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [recentPlanets]);
+
+  // Navigation functions
+  const navigateTo = (newView, newUwp = null) => {
+    const url = buildUrl(newView, newUwp);
+    window.history.pushState({ view: newView, uwp: newUwp }, "", url);
+    setView(newView);
+  };
+
   const resetDecoder = () => {
     setName("");
     setUwp("");
     setZoneInput("V");
     setScanStatus("");
-    setView("decoder");
+    navigateTo("decoder");
   };
 
   const loadPlanet = (planet) => {
     setName(planet.name);
     setUwp(planet.uwp);
-    setZoneInput(planet.zone);
+    setZoneInput(planet.zone || "V");
 
     // Move planet to top of recent list (localStorage sync handled by effect)
     const updatedPlanet = { ...planet, timestamp: Date.now() };
@@ -125,7 +223,7 @@ export default function App() {
       return [updatedPlanet, ...filtered];
     });
 
-    setView("planet");
+    navigateTo("planet", planet.uwp);
   };
 
   const deletePlanet = (planetUwp) => {
@@ -237,7 +335,7 @@ export default function App() {
         }
 
         // Navigate to planet detail view after successful scan
-        setView("planet");
+        navigateTo("planet", formattedUwp);
       } else {
         setScanStatus(t("noUwpFound"));
       }
@@ -296,10 +394,10 @@ export default function App() {
 
   // Redirect to decoder if planet view has no valid UWP
   useEffect(() => {
-    if (view === "planet" && !parsed) {
-      setView("decoder");
+    if (view === "planet" && !parsed && !isInitialLoad.current) {
+      navigateTo("decoder");
     }
-  }, [view, parsed]);
+  }, [view, parsed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Planet Detail View
   if (view === "planet") {
@@ -327,7 +425,7 @@ export default function App() {
               <IconHome />{t("home")}
             </button>
             <button
-              onClick={() => setView("saved")}
+              onClick={() => navigateTo("saved")}
               style={{
                 flex: 1,
                 background: "#334155",
@@ -661,7 +759,7 @@ export default function App() {
               }}
             />
             <button
-              onClick={() => setView("planet")}
+              onClick={() => navigateTo("planet", uwp)}
               disabled={!parsed}
               style={{
                 background: parsed ? "#3b82f6" : "#334155",
@@ -685,7 +783,7 @@ export default function App() {
 
         {/* Recent button */}
         <button
-          onClick={() => setView("saved")}
+          onClick={() => navigateTo("saved")}
           style={{
             width: "100%",
             background: "#1e293b",
