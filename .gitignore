@@ -2,7 +2,7 @@
 node_modules/
 
 # Build output
-# dist/  # Keeping dist for standalone deployment
+dist/
 
 # IDE
 .idea/
