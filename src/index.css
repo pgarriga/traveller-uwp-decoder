@@ -100,7 +100,7 @@ input.planet-name {
 /* Mobile styles */
 @media (max-width: 480px) {
   .app-title {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .form-grid {

@@ -62,6 +62,7 @@ export default function App() {
   const [name, setName] = useState("");
   const [zoneInput, setZoneInput] = useState("V");
   const [recentPlanets, setRecentPlanets] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [view, setView] = useState("decoder"); // "decoder" | "saved" | "planet"
   const [scanning, setScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
@@ -87,7 +88,15 @@ export default function App() {
       console.error("Failed to load recent planets:", e);
       localStorage.removeItem("traveller-recent");
     }
+    setDataLoaded(true);
   }, []);
+
+  // Sync recentPlanets to localStorage whenever it changes (after initial load)
+  useEffect(() => {
+    if (dataLoaded) {
+      localStorage.setItem("traveller-recent", JSON.stringify(recentPlanets));
+    }
+  }, [recentPlanets, dataLoaded]);
 
   const resetDecoder = () => {
     setName("");
@@ -102,27 +111,22 @@ export default function App() {
     setUwp(planet.uwp);
     setZoneInput(planet.zone);
 
-    // Move planet to top of recent list
+    // Move planet to top of recent list (localStorage sync handled by effect)
     const updatedPlanet = { ...planet, timestamp: Date.now() };
     setRecentPlanets(prev => {
       const filtered = prev.filter(p => p.uwp !== planet.uwp);
-      const updated = [updatedPlanet, ...filtered];
-      localStorage.setItem("traveller-recent", JSON.stringify(updated));
-      return updated;
+      return [updatedPlanet, ...filtered];
     });
 
     setView("planet");
   };
 
   const deletePlanet = (planetUwp) => {
-    const newPlanets = recentPlanets.filter(p => p.uwp !== planetUwp);
-    setRecentPlanets(newPlanets);
-    localStorage.setItem("traveller-recent", JSON.stringify(newPlanets));
+    setRecentPlanets(prev => prev.filter(p => p.uwp !== planetUwp));
   };
 
   const clearAllPlanets = () => {
     setRecentPlanets([]);
-    localStorage.removeItem("traveller-recent");
   };
 
   // OCR Scanner function
@@ -258,16 +262,10 @@ export default function App() {
     return { sp, sz, at, hy, po, go, la, tl };
   }, [uwp, STARPORT]);
 
-  // Auto-save to recent when on planet view
-  const lastSavedUwp = useRef("");
+  // Auto-save to recent when on planet view (localStorage sync handled by separate effect)
   useEffect(() => {
     if (view === "planet" && parsed && uwp.trim()) {
       const normalizedUwp = uwp.toUpperCase();
-      // Save when entering planet view with new UWP
-      if (lastSavedUwp.current !== normalizedUwp) {
-        lastSavedUwp.current = normalizedUwp;
-      }
-      // Always update the planet data
       const planet = {
         name: name.trim() || normalizedUwp,
         uwp: normalizedUwp,
@@ -277,9 +275,7 @@ export default function App() {
 
       setRecentPlanets(prev => {
         const filtered = prev.filter(p => p.uwp !== planet.uwp);
-        const updated = [planet, ...filtered].slice(0, 20);
-        localStorage.setItem("traveller-recent", JSON.stringify(updated));
-        return updated;
+        return [planet, ...filtered].slice(0, 20);
       });
     }
   }, [view, uwp, parsed, name, zoneInput]);
@@ -360,24 +356,26 @@ export default function App() {
                 outline: "none"
               }}
             />
-            <div style={{ fontFamily: "monospace", fontSize: 16, color: "#94a3b8", letterSpacing: 2, marginBottom: 8 }}>{uwp.toUpperCase()}</div>
-            <select
-              value={zoneInput}
-              onChange={e => setZoneInput(e.target.value)}
-              style={{
-                background: zoneInput === "R" ? "#ef444433" : zoneInput === "A" ? "#f59e0b33" : "#10b98133",
-                border: `1px solid ${zoneInput === "R" ? "#ef4444" : zoneInput === "A" ? "#f59e0b" : "#10b981"}`,
-                borderRadius: 6,
-                color: zoneInput === "R" ? "#ef4444" : zoneInput === "A" ? "#f59e0b" : "#10b981",
-                padding: "4px 8px",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer"
-              }}>
-              <option value="V">{t("zoneGreen")}</option>
-              <option value="A">{t("zoneAmber")}</option>
-              <option value="R">{t("zoneRed")}</option>
-            </select>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+              <span style={{ fontFamily: "monospace", fontSize: 16, color: "#94a3b8", letterSpacing: 2 }}>{uwp.toUpperCase()}</span>
+              <select
+                value={zoneInput}
+                onChange={e => setZoneInput(e.target.value)}
+                style={{
+                  background: zoneInput === "R" ? "#ef444433" : zoneInput === "A" ? "#f59e0b33" : "#10b98133",
+                  border: `1px solid ${zoneInput === "R" ? "#ef4444" : zoneInput === "A" ? "#f59e0b" : "#10b981"}`,
+                  borderRadius: 6,
+                  color: zoneInput === "R" ? "#ef4444" : zoneInput === "A" ? "#f59e0b" : "#10b981",
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer"
+                }}>
+                <option value="V">{t("zoneGreen")}</option>
+                <option value="A">{t("zoneAmber")}</option>
+                <option value="R">{t("zoneRed")}</option>
+              </select>
+            </div>
           </div>
 
           {/* Planet details */}
