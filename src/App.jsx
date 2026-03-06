@@ -530,48 +530,37 @@ export default function App() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {recentPlanets.map((planet) => (
-                <div key={planet.uwp} style={{ background: "#1e293b", borderRadius: 12, padding: 16 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>{planet.name}</div>
-                      <div style={{ fontFamily: "monospace", fontSize: 14, color: "#94a3b8", letterSpacing: 1 }}>{planet.uwp}</div>
-                    </div>
-                    <Badge
-                      text={getZoneName(planet.zone)}
-                      color={planet.zone === "R" ? "#ef4444" : planet.zone === "A" ? "#f59e0b" : "#10b981"}
-                    />
+                <div
+                  key={planet.uwp}
+                  onClick={() => loadPlanet(planet)}
+                  style={{
+                    background: "#1e293b",
+                    borderRadius: 10,
+                    padding: "12px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    cursor: "pointer",
+                    borderLeft: `3px solid ${planet.zone === "R" ? "#ef4444" : planet.zone === "A" ? "#f59e0b" : "#10b981"}`
+                  }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{planet.name}</div>
+                    <div style={{ fontFamily: "monospace", fontSize: 12, color: "#64748b", letterSpacing: 0.5 }}>{planet.uwp}</div>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      onClick={() => loadPlanet(planet)}
-                      style={{
-                        flex: 1,
-                        background: "#3b82f6",
-                        border: "none",
-                        borderRadius: 8,
-                        color: "#fff",
-                        padding: "10px 16px",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}>
-                      <IconSearch />{t("viewInfo")}
-                    </button>
-                    <button
-                      onClick={() => deletePlanet(planet.uwp)}
-                      style={{
-                        background: "#1e293b",
-                        border: "1px solid #ef4444",
-                        borderRadius: 8,
-                        color: "#ef4444",
-                        padding: "10px 16px",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}>
-                      <IconTrash />{t("delete")}
-                    </button>
-                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deletePlanet(planet.uwp); }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#64748b",
+                      padding: 8,
+                      cursor: "pointer",
+                      borderRadius: 6,
+                      display: "flex",
+                      alignItems: "center"
+                    }}>
+                    <IconTrash />
+                  </button>
                 </div>
               ))}
             </div>
