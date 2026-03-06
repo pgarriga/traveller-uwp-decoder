@@ -1,97 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
+import { useTranslation, getSTARPORT, getSIZE, getATMO, getHYDRO, getPOP, getGOV, getLAW_WEAPONS, getLAW_ARMOR } from "./i18n";
 
 const hex = v => parseInt(v, 16);
 
-const STARPORT = {
-  A: { name: "Excelente", fuel: "Refinado", berth: "1D×1.000 Cr", services: "Astillero (todos), Reparación", bases: "Naval 8+, Exploración 10+, Investigación 8+, SAV" },
-  B: { name: "Buena", fuel: "Refinado", berth: "1D×500 Cr", services: "Astillero (astronaves), Reparación", bases: "Naval 8+, Exploración 8+, Investigación 10+, SAV" },
-  C: { name: "Rutinaria", fuel: "Sin refinar", berth: "1D×100 Cr", services: "Astillero (lanzaderas), Reparación", bases: "Exploración 8+, Investigación 10+, SAV 10+" },
-  D: { name: "Pobre", fuel: "Sin refinar", berth: "1D×10 Cr", services: "Reparación limitada", bases: "Exploración 7+" },
-  E: { name: "Fronteriza", fuel: "Ninguno", berth: "Gratis", services: "Ninguno", bases: "Ninguno" },
-  X: { name: "Sin astropuerto", fuel: "Ninguno", berth: "N/A", services: "Ninguno", bases: "Ninguno" },
-};
-
-const SIZE = [
-  { d: "<1.000 km", g: "Desdeñable", ex: "Asteroide", desc: "Asteroide o complejo orbital. Sin atmósfera." },
-  { d: "1.600 km", g: "0,05", ex: "Tritón", desc: "Cuerpo muy pequeño, sin atmósfera respirable." },
-  { d: "3.200 km", g: "0,15", ex: "Luna, Europa", desc: "Pequeño satélite." },
-  { d: "4.800 km", g: "0,25", ex: "Mercurio", desc: "Mundo pequeño." },
-  { d: "6.400 km", g: "0,35", ex: "", desc: "Mundo pequeño, baja gravedad." },
-  { d: "8.000 km", g: "0,45", ex: "Marte", desc: "Mundo mediano-pequeño, baja gravedad." },
-  { d: "9.600 km", g: "0,7", ex: "", desc: "Mundo mediano. Baja gravedad (≤0,7g)." },
-  { d: "11.200 km", g: "0,9", ex: "", desc: "Mundo mediano-grande." },
-  { d: "12.800 km", g: "1,0", ex: "Tierra", desc: "Similar a la Tierra." },
-  { d: "14.400 km", g: "1,25", ex: "", desc: "Mundo grande." },
-  { d: "16.000 km", g: "1,4", ex: "", desc: "Mundo muy grande. Alta gravedad (≥1,4g)." },
-];
-
-const ATMO = [
-  { comp: "Ninguno", pres: "0,00", equip: "Traje espacial", desc: "Sin atmósfera." },
-  { comp: "Trazas", pres: "0,001-0,09", equip: "Traje espacial", desc: "Atmósfera vestigial." },
-  { comp: "Muy tenue, Nociva", pres: "0,1-0,42", equip: "Respirador + Filtro", desc: "Muy tenue y tóxica." },
-  { comp: "Muy tenue", pres: "0,1-0,42", equip: "Respirador", desc: "Muy tenue pero no tóxica." },
-  { comp: "Tenue, Nociva", pres: "0,43-0,7", equip: "Filtro", desc: "Tenue y tóxica." },
-  { comp: "Tenue", pres: "0,43-0,7", equip: "Ninguno", desc: "Tenue pero respirable." },
-  { comp: "Estándar", pres: "0,71-1,49", equip: "Ninguno", desc: "Atmósfera similar a la Tierra." },
-  { comp: "Estándar, Nociva", pres: "0,71-1,49", equip: "Filtro", desc: "Presión estándar pero tóxica." },
-  { comp: "Densa", pres: "1,5-2,49", equip: "Ninguno", desc: "Atmósfera densa pero respirable." },
-  { comp: "Densa, Nociva", pres: "1,5-2,49", equip: "Filtro", desc: "Densa y tóxica." },
-  { comp: "Exótica", pres: "Varía", equip: "Suministro de aire", desc: "No respirable pero no peligrosa." },
-  { comp: "Corrosiva", pres: "Varía", equip: "Traje espacial", desc: "¡Altamente peligrosa! 1D daño/turno." },
-  { comp: "Insidiosa", pres: "Varía", equip: "Traje espacial", desc: "Corrosiva + destruye equipo en 2D horas." },
-  { comp: "Densidad alta", pres: "2,5+", equip: "Varía", desc: "N₂/O₂ a muy alta presión. Solo habitable en altitud." },
-  { comp: "Densidad baja", pres: "≤0,5", equip: "Varía", desc: "Solo respirable en tierras bajas y depresiones." },
-  { comp: "Inusual", pres: "Varía", equip: "Varía", desc: "Atmósfera con comportamiento extraño." },
-];
-
-const HYDRO = [
-  "0%-5% — Mundo desértico", "6%-15% — Mundo seco", "16%-25% — Algunos mares pequeños",
-  "26%-35% — Pequeños mares y océanos", "36%-45% — Mundo húmedo", "46%-55% — Grandes océanos",
-  "56%-65%", "66%-75% — Similar a la Tierra", "76%-85% — Mundo acuático",
-  "86%-95% — Solo islas y archipiélagos", "96%-100% — Casi todo agua",
-];
-
-const POP = [
-  "Ninguna (deshabitado)", "Pocos (1+) — Granja/familia", "Cientos (100+) — Aldea",
-  "Miles (1.000+)", "Decenas de miles (10.000+) — Pueblo", "Cientos de miles (100.000+) — Ciudad mediana",
-  "Millones (1.000.000+)", "Decenas de millones (10.000.000+) — Gran ciudad",
-  "Cientos de millones (100.000.000+)", "Millardos (1.000.000.000+) — Tierra actual",
-  "Decenas de millardos (10.000.000.000+)", "Cientos de millardos", "Billones — Mundo-ciudad",
-];
-
-const GOV = [
-  { type: "Ninguno", desc: "Sin estructura. Predominan lazos familiares.", contra: "Ninguno" },
-  { type: "Compañía/Corporación", desc: "Élite gerencial de empresa. Ciudadanos son empleados.", contra: "Armas, drogas, Viajeros" },
-  { type: "Democracia participativa", desc: "Decisiones por consentimiento directo de la ciudadanía.", contra: "Drogas" },
-  { type: "Oligarquía autoperpetuante", desc: "Gobernada por una minoría restringida.", contra: "Tecnología, armas, viajeros" },
-  { type: "Democracia representativa", desc: "Representantes elegidos toman decisiones.", contra: "Drogas, armas, psiónicos" },
-  { type: "Tecnocracia feudal", desc: "Gobernantes elegidos por competencia técnica.", contra: "Tecnología, armas, ordenadores" },
-  { type: "Gobierno cautivo", desc: "Liderazgo impuesto por grupo externo.", contra: "Armas, tecnología, viajeros" },
-  { type: "Balcanización", desc: "Sin autoridad central. Gobiernos rivales compiten.", contra: "Varía" },
-  { type: "Burocracia de servicio civil", desc: "Organismos con personal seleccionado por experiencia.", contra: "Drogas, armas" },
-  { type: "Burocracia impersonal", desc: "Agencias aisladas de los ciudadanos.", contra: "Tecnología, armas, drogas, Viajeros, psiónicos" },
-  { type: "Dictador carismático", desc: "Líder único con confianza abrumadora.", contra: "Ninguno" },
-  { type: "Líder no carismático", desc: "Dictadura militar o reinado hereditario.", contra: "Armas, tecnología, ordenadores" },
-  { type: "Oligarquía carismática", desc: "Grupo selecto con confianza popular.", contra: "Armas" },
-  { type: "Dictadura religiosa", desc: "Organización religiosa gobierna.", contra: "Varía" },
-  { type: "Autocracia religiosa", desc: "Líder religioso con poder absoluto.", contra: "Varía" },
-  { type: "Oligarquía totalitaria", desc: "Minoría con control absoluto por coacción.", contra: "Varía" },
-];
-
-const LAW_WEAPONS = [
-  "Sin restricciones", "Gas venenoso, explosivos, ADM", "Armas energéticas portátiles y láser",
-  "Armas militares", "Armas de asalto ligeras y subfusiles", "Armas personales ocultas",
-  "Toda arma de fuego excepto escopetas/aturdidores", "Escopetas", "Todas las armas de filo, aturdidores", "Todas las armas",
-];
-
-const LAW_ARMOR = [
-  "Sin restricciones", "Traje de combate", "Armadura de combate", "Chaleco antibalas",
-  "Tejido", "Malla", "", "", "Toda armadura visible", "Todas las armaduras",
-];
-
-
 const ZONE_COLORS = { A: "#f59e0b", R: "#ef4444" };
-
 
 const Section = ({ title, children, color = "#3b82f6" }) => (
   <div style={{ background: "#1e293b", borderRadius: 12, padding: "16px 20px", marginBottom: 12, borderLeft: `4px solid ${color}` }}>
@@ -112,11 +24,22 @@ const Badge = ({ text, color = "#3b82f6" }) => (
 );
 
 export default function App() {
+  const { t, lang } = useTranslation();
   const [uwp, setUwp] = useState("");
   const [name, setName] = useState("");
   const [zoneInput, setZoneInput] = useState("V");
   const [savedPlanets, setSavedPlanets] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
+
+  // Get translated game data
+  const STARPORT = useMemo(() => getSTARPORT(t)[lang], [lang, t]);
+  const SIZE = useMemo(() => getSIZE(lang), [lang]);
+  const ATMO = useMemo(() => getATMO(lang), [lang]);
+  const HYDRO = useMemo(() => getHYDRO(lang), [lang]);
+  const POP = useMemo(() => getPOP(lang), [lang]);
+  const GOV = useMemo(() => getGOV(lang), [lang]);
+  const LAW_WEAPONS = useMemo(() => getLAW_WEAPONS(lang), [lang]);
+  const LAW_ARMOR = useMemo(() => getLAW_ARMOR(lang), [lang]);
 
   useEffect(() => {
     const stored = localStorage.getItem("traveller-planets");
@@ -168,39 +91,44 @@ export default function App() {
     const [sz, at, hy, po, go, la] = vals;
     const tl = clean.length >= 9 ? hex(clean[clean.length - 1]) : vals[6];
     return { sp, sz, at, hy, po, go, la, tl };
-  }, [uwp]);
+  }, [uwp, STARPORT]);
 
-
+  // Zone display name helper
+  const getZoneName = (zone) => {
+    if (zone === "R") return lang === "es" ? "Roja" : "Red";
+    if (zone === "A") return lang === "es" ? "Ámbar" : "Amber";
+    return t("zoneGreen");
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>Mongoose Traveller</div>
+          <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>{t("subtitle")}</div>
           <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Universal World Profile Decoder
+            {t("title")}
           </h1>
         </div>
 
         <div style={{ background: "#1e293b", borderRadius: 12, padding: 20, marginBottom: 16 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, marginBottom: 10 }}>
             <div>
-              <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>Nombre del mundo</label>
+              <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("worldName")}</label>
               <input value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }} />
             </div>
             <div>
-              <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>Zona</label>
+              <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("zone")}</label>
               <select value={zoneInput} onChange={e => setZoneInput(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }}>
-                <option value="V">Verde</option>
-                <option value="A">Ámbar</option>
-                <option value="R">Rojo</option>
+                <option value="V">{t("zoneGreen")}</option>
+                <option value="A">{t("zoneAmber")}</option>
+                <option value="R">{t("zoneRed")}</option>
               </select>
             </div>
           </div>
 
           <div style={{ marginBottom: 10 }}>
-            <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>Código UWP (ej: A788899-C)</label>
-            <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder="A788899-C" style={{ width: "100%", background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center", boxSizing: "border-box" }} />
+            <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("uwpCode")}</label>
+            <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ width: "100%", background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center", boxSizing: "border-box" }} />
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
@@ -218,7 +146,7 @@ export default function App() {
                 fontWeight: 600,
                 cursor: canSave ? "pointer" : "not-allowed"
               }}>
-              Guardar planeta
+              {t("savePlanet")}
             </button>
             <button
               onClick={() => setShowSaved(!showSaved)}
@@ -232,21 +160,21 @@ export default function App() {
                 fontWeight: 600,
                 cursor: "pointer"
               }}>
-              {showSaved ? "Ocultar" : "Ver guardados"} ({savedPlanets.length})
+              {showSaved ? t("hide") : t("viewSaved")} ({savedPlanets.length})
             </button>
           </div>
 
           {!canSave && (name || uwp || zoneInput) && (
             <div style={{ fontSize: 11, color: "#f59e0b", marginTop: 8 }}>
-              Para guardar, completa: {!name.trim() && "nombre"}{!name.trim() && (!uwp.trim() || !zoneInput) && ", "}{!uwp.trim() && "código UWP"}{!uwp.trim() && !zoneInput && ", "}{!zoneInput && "zona"}
+              {t("toSaveComplete")} {!name.trim() && t("fieldName")}{!name.trim() && (!uwp.trim() || !zoneInput) && ", "}{!uwp.trim() && t("fieldUwp")}{!uwp.trim() && !zoneInput && ", "}{!zoneInput && t("fieldZone")}
             </div>
           )}
 
           {showSaved && (
             <div style={{ marginTop: 12, background: "#0f172a", borderRadius: 8, padding: 12 }}>
-              <div style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", marginBottom: 8 }}>Planetas guardados</div>
+              <div style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", marginBottom: 8 }}>{t("savedPlanets")}</div>
               {savedPlanets.length === 0 ? (
-                <div style={{ color: "#64748b", fontSize: 13 }}>No hay planetas guardados</div>
+                <div style={{ color: "#64748b", fontSize: 13 }}>{t("noSavedPlanets")}</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {savedPlanets.map((planet, i) => (
@@ -255,13 +183,13 @@ export default function App() {
                         <span style={{ fontWeight: 600, color: "#e2e8f0" }}>{planet.name}</span>
                         <span style={{ marginLeft: 8, fontFamily: "monospace", fontSize: 12, color: "#94a3b8" }}>{planet.uwp}</span>
                         <span style={{ marginLeft: 8, fontSize: 11, color: planet.zone === "R" ? "#ef4444" : planet.zone === "A" ? "#f59e0b" : "#10b981" }}>
-                          {planet.zone === "R" ? "Roja" : planet.zone === "A" ? "Ámbar" : "Verde"}
+                          {getZoneName(planet.zone)}
                         </span>
                       </div>
                       <button
                         onClick={() => deletePlanet(planet.name)}
                         style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "4px 8px", fontSize: 12 }}>
-                        Eliminar
+                        {t("delete")}
                       </button>
                     </div>
                   ))}
@@ -274,105 +202,102 @@ export default function App() {
 
         {!parsed ? (
           <div style={{ textAlign: "center", padding: 40, color: "#64748b" }}>
-            Introduce un código UWP válido (formato: Xnnnnnn-n)
+            {t("invalidUwp")}
           </div>
         ) : (
           <>
             <div style={{ background: "linear-gradient(135deg, #1e3a5f, #1e293b)", borderRadius: 12, padding: 16, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 800 }}>{name || "Sin nombre"}</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{name || t("unnamed")}</div>
                 <div style={{ fontFamily: "monospace", fontSize: 13, color: "#94a3b8" }}>{uwp.toUpperCase()}</div>
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                {(zoneInput === "A" || zoneInput === "R") && <Badge text={`Zona ${zoneInput === "A" ? "Ámbar" : "Roja"}`} color={ZONE_COLORS[zoneInput]} />}
+                {(zoneInput === "A" || zoneInput === "R") && <Badge text={`${t("zoneLabel")} ${getZoneName(zoneInput)}`} color={ZONE_COLORS[zoneInput]} />}
               </div>
             </div>
 
-            <Section title={`Astropuerto — Clase ${parsed.sp}`} color="#f59e0b">
-              <Row label="Calidad" value={STARPORT[parsed.sp].name} />
-              <Row label="Combustible" value={STARPORT[parsed.sp].fuel} />
-              <Row label="Atraque" value={STARPORT[parsed.sp].berth} />
-              <Row label="Servicios" value={STARPORT[parsed.sp].services} />
-              <Row label="Bases posibles" value={STARPORT[parsed.sp].bases} />
+            <Section title={`${t("starport")} — ${t("class")} ${parsed.sp}`} color="#f59e0b">
+              <Row label={t("quality")} value={STARPORT[parsed.sp].name} />
+              <Row label={t("fuel")} value={STARPORT[parsed.sp].fuel} />
+              <Row label={t("berth")} value={STARPORT[parsed.sp].berth} />
+              <Row label={t("services")} value={STARPORT[parsed.sp].services} />
+              <Row label={t("possibleBases")} value={STARPORT[parsed.sp].bases} />
             </Section>
 
-            <Section title={`Tamaño — ${parsed.sz} ${SIZE[parsed.sz] ? `(${SIZE[parsed.sz].d})` : ""}`} color="#3b82f6">
+            <Section title={`${t("size")} — ${parsed.sz} ${SIZE[parsed.sz] ? `(${SIZE[parsed.sz].d})` : ""}`} color="#3b82f6">
               {SIZE[parsed.sz] && <>
-                <Row label="Diámetro" value={SIZE[parsed.sz].d} />
-                <Row label="Gravedad" value={`${SIZE[parsed.sz].g}g`} />
-                {SIZE[parsed.sz].ex && <Row label="Ejemplo" value={SIZE[parsed.sz].ex} />}
-                <Row label="Descripción" value={SIZE[parsed.sz].desc} />
-                {parsed.sz <= 6 && parsed.sz > 0 && <Row label="⚠ Gravedad" value="Baja gravedad (≤0,7g)" warn />}
-                {parsed.sz >= 10 && <Row label="⚠ Gravedad" value="Alta gravedad (≥1,4g)" warn />}
+                <Row label={t("diameter")} value={SIZE[parsed.sz].d} />
+                <Row label={t("gravity")} value={`${SIZE[parsed.sz].g}g`} />
+                {SIZE[parsed.sz].ex && <Row label={t("example")} value={SIZE[parsed.sz].ex} />}
+                <Row label={t("description")} value={SIZE[parsed.sz].desc} />
+                {parsed.sz <= 6 && parsed.sz > 0 && <Row label={`⚠ ${t("gravityWarning")}`} value={t("lowGravity")} warn />}
+                {parsed.sz >= 10 && <Row label={`⚠ ${t("gravityWarning")}`} value={t("highGravity")} warn />}
               </>}
             </Section>
 
-            <Section title={`Atmósfera — ${parsed.at} (${ATMO[parsed.at]?.comp || "Desconocida"})`} color="#10b981">
+            <Section title={`${t("atmosphere")} — ${parsed.at} (${ATMO[parsed.at]?.comp || t("unknown")})`} color="#10b981">
               {ATMO[parsed.at] && <>
-                <Row label="Composición" value={ATMO[parsed.at].comp} />
-                <Row label="Presión (atm)" value={ATMO[parsed.at].pres} />
-                <Row label="Equipo requerido" value={ATMO[parsed.at].equip} warn={ATMO[parsed.at].equip !== "Ninguno"} />
-                <Row label="Descripción" value={ATMO[parsed.at].desc} />
-                {parsed.at >= 11 && <Row label="⚠ Peligro" value="¡Atmósfera peligrosa!" warn />}
+                <Row label={t("composition")} value={ATMO[parsed.at].comp} />
+                <Row label={t("pressure")} value={ATMO[parsed.at].pres} />
+                <Row label={t("equipRequired")} value={ATMO[parsed.at].equip} warn={ATMO[parsed.at].equip !== t("none") && ATMO[parsed.at].equip !== "None" && ATMO[parsed.at].equip !== "Ninguno"} />
+                <Row label={t("description")} value={ATMO[parsed.at].desc} />
+                {parsed.at >= 11 && <Row label={`⚠ ${t("danger")}`} value={t("dangerousAtmo")} warn />}
               </>}
             </Section>
 
-            <Section title={`Hidrografía — ${parsed.hy} (${parsed.hy * 10}%-${Math.min(parsed.hy * 10 + 9, 100)}%)`} color="#06b6d4">
-              <Row label="Cobertura líquida" value={HYDRO[parsed.hy] || `${parsed.hy * 10}%`} />
-              {parsed.at >= 10 && parsed.hy > 0 && <Row label="⚠ Nota" value="El líquido puede no ser agua (atmósfera exótica/corrosiva)" warn />}
+            <Section title={`${t("hydrographics")} — ${parsed.hy} (${parsed.hy * 10}%-${Math.min(parsed.hy * 10 + 9, 100)}%)`} color="#06b6d4">
+              <Row label={t("liquidCoverage")} value={HYDRO[parsed.hy] || `${parsed.hy * 10}%`} />
+              {parsed.at >= 10 && parsed.hy > 0 && <Row label={`⚠ ${t("note")}`} value={t("liquidNote")} warn />}
             </Section>
 
-            <Section title={`Población — ${parsed.po}`} color="#8b5cf6">
-              <Row label="Habitantes" value={POP[parsed.po] || `Nivel ${parsed.po}`} />
-              {parsed.po === 0 && <Row label="⚠ Nota" value="Deshabitado: Gobierno, Ley y NT = 0" warn />}
-              {parsed.po <= 3 && parsed.po > 0 && <Row label="⚠ Nota" value="Colonia muy pequeña. Puede diferir mucho de lo estándar." warn />}
+            <Section title={`${t("population")} — ${parsed.po}`} color="#8b5cf6">
+              <Row label={t("inhabitants")} value={POP[parsed.po] || `${t("level")} ${parsed.po}`} />
+              {parsed.po === 0 && <Row label={`⚠ ${t("note")}`} value={t("uninhabitedNote")} warn />}
+              {parsed.po <= 3 && parsed.po > 0 && <Row label={`⚠ ${t("note")}`} value={t("smallColonyNote")} warn />}
             </Section>
 
-            <Section title={`Gobierno — ${parsed.go} (${GOV[parsed.go]?.type || "Desconocido"})`} color="#ec4899">
+            <Section title={`${t("government")} — ${parsed.go} (${GOV[parsed.go]?.type || t("unknown")})`} color="#ec4899">
               {GOV[parsed.go] && <>
-                <Row label="Tipo" value={GOV[parsed.go].type} />
-                <Row label="Descripción" value={GOV[parsed.go].desc} />
-                <Row label="Contrabando común" value={GOV[parsed.go].contra} warn={GOV[parsed.go].contra !== "Ninguno"} />
+                <Row label={t("type")} value={GOV[parsed.go].type} />
+                <Row label={t("description")} value={GOV[parsed.go].desc} />
+                <Row label={t("commonContraband")} value={GOV[parsed.go].contra} warn={GOV[parsed.go].contra !== t("none") && GOV[parsed.go].contra !== "None" && GOV[parsed.go].contra !== "Ninguno"} />
               </>}
             </Section>
 
-            <Section title={`Nivel de Ley — ${parsed.la}`} color="#f43f5e">
-              <Row label="Armas prohibidas" value={LAW_WEAPONS[Math.min(parsed.la, 9)] || "Todas las armas"} warn={parsed.la >= 4} />
-              <Row label="Armadura prohibida" value={LAW_ARMOR[Math.min(parsed.la, 9)] || "Todas"} warn={parsed.la >= 8} />
-              {parsed.la === 0 && <Row label="Nota" value="Sin restricciones. Se recomienda ir armado." />}
-              {parsed.la >= 9 && <Row label="⚠ Ley marcial" value="Todas las armas y armaduras prohibidas" warn />}
+            <Section title={`${t("lawLevel")} — ${parsed.la}`} color="#f43f5e">
+              <Row label={t("bannedWeapons")} value={LAW_WEAPONS[Math.min(parsed.la, 9)] || LAW_WEAPONS[9]} warn={parsed.la >= 4} />
+              <Row label={t("bannedArmor")} value={LAW_ARMOR[Math.min(parsed.la, 9)] || LAW_ARMOR[9]} warn={parsed.la >= 8} />
+              {parsed.la === 0 && <Row label={t("note")} value={t("noRestrictions")} />}
+              {parsed.la >= 9 && <Row label={`⚠ ${t("martialLaw")}`} value={t("allWeaponsArmorBanned")} warn />}
             </Section>
 
-            <Section title={`Nivel Tecnológico — ${parsed.tl}`} color="#6366f1">
-              <Row label="NT" value={`${parsed.tl}`} />
-              <Row label="Equivalente" value={
-                parsed.tl <= 0 ? "Primitivo" :
-                parsed.tl <= 3 ? "Era preindustrial" :
-                parsed.tl <= 5 ? "Era industrial" :
-                parsed.tl <= 7 ? "Era preatómica / atómica" :
-                parsed.tl <= 9 ? "Era espacial temprana" :
-                parsed.tl <= 11 ? "Era estelar temprana" :
-                parsed.tl <= 13 ? "Era estelar media" :
-                "Era estelar avanzada"
+            <Section title={`${t("techLevel")} — ${parsed.tl}`} color="#6366f1">
+              <Row label={t("tl")} value={`${parsed.tl}`} />
+              <Row label={t("equivalent")} value={
+                parsed.tl <= 0 ? t("primitive") :
+                parsed.tl <= 3 ? t("preindustrial") :
+                parsed.tl <= 5 ? t("industrial") :
+                parsed.tl <= 7 ? t("preatomic") :
+                parsed.tl <= 9 ? t("earlySpace") :
+                parsed.tl <= 11 ? t("earlyStellar") :
+                parsed.tl <= 13 ? t("midStellar") :
+                t("advancedStellar")
               } />
-              {parsed.tl < 3 && <Row label="⚠ Comunicaciones" value="Sin telecomunicaciones (solo astropuerto)" warn />}
-              {parsed.tl >= 4 && parsed.tl <= 6 && <Row label="Comunicaciones" value="Radio/teléfono entre ciudades, sin satélites" />}
-              {parsed.tl >= 9 && <Row label="Comunicaciones" value="Red completa, accesible desde cualquier punto" />}
+              {parsed.tl < 3 && <Row label={`⚠ ${t("communications")}`} value={t("noTelecom")} warn />}
+              {parsed.tl >= 4 && parsed.tl <= 6 && <Row label={t("communications")} value={t("radioPhone")} />}
+              {parsed.tl >= 9 && <Row label={t("communications")} value={t("fullNetwork")} />}
             </Section>
 
 
             {(zoneInput === "A" || zoneInput === "R") && (
-              <Section title={`Zona de Viaje — ${zoneInput === "A" ? "Ámbar" : "Roja"}`} color={ZONE_COLORS[zoneInput]}>
-                <Row label="Código" value={zoneInput === "A" ? "Ámbar — Precaución" : "Rojo — Prohibido"} warn />
-                <Row label="Significado" value={
-                  zoneInput === "A" ? "Peligro potencial: xenofobia, inestabilidad política u otros peligros." :
-                  "Interdicción: cuarentena, guerra activa o protección imperial. Viaje prohibido."
-                } />
+              <Section title={`${t("travelZone")} — ${getZoneName(zoneInput)}`} color={ZONE_COLORS[zoneInput]}>
+                <Row label={t("code")} value={zoneInput === "A" ? t("amberCaution") : t("redProhibited")} warn />
+                <Row label={t("meaning")} value={zoneInput === "A" ? t("amberMeaning") : t("redMeaning")} />
               </Section>
             )}
 
             <div style={{ background: "#1e293b", borderRadius: 12, padding: 16, textAlign: "center", marginTop: 8 }}>
-              <div style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>Línea completa del mundo</div>
+              <div style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>{t("worldLine")}</div>
               <code style={{ fontSize: 15, color: "#f59e0b", fontWeight: 700, letterSpacing: 1 }}>
                 {name} {uwp.toUpperCase()} {zoneInput}
               </code>
@@ -381,8 +306,8 @@ export default function App() {
         )}
 
         <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#475569" }}>
-          Herramienta no oficial con el fin de agilizar el juego<br />
-          Para detalles completos revisar el manual
+          {t("disclaimer")}<br />
+          {t("manualNote")}
         </div>
       </div>
     </div>
