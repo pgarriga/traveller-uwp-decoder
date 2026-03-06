@@ -136,6 +136,7 @@ const translations = {
     free: "Gratis",
 
     // Scanner
+    home: "Inicio",
     scan: "Escanear",
     scanning: "Escaneando...",
     scanError: "Error al procesar la imagen",
@@ -281,6 +282,7 @@ const translations = {
     free: "Free",
 
     // Scanner
+    home: "Home",
     scan: "Scan",
     scanning: "Scanning...",
     scanError: "Error processing image",

@@ -38,6 +38,13 @@ const IconTrash = () => (
   </svg>
 );
 
+const IconHome = () => (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+
 const Section = ({ title, children, color = "#3b82f6" }) => (
   <div style={{ background: "#1e293b", borderRadius: 12, padding: "16px 20px", marginBottom: 12, borderLeft: `4px solid ${color}` }}>
     <div className="section-title" style={{ color, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{title}</div>
@@ -308,16 +315,16 @@ export default function App() {
               onClick={resetDecoder}
               style={{
                 flex: 1,
-                background: "#8b5cf6",
+                background: "#334155",
                 border: "none",
                 borderRadius: 8,
-                color: "#fff",
+                color: "#e2e8f0",
                 padding: "12px 16px",
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer"
               }}>
-              <IconCamera />{t("scan")}
+              <IconHome />{t("home")}
             </button>
             <button
               onClick={() => setView("saved")}
@@ -484,17 +491,17 @@ export default function App() {
             onClick={resetDecoder}
             style={{
               width: "100%",
-              background: "#8b5cf6",
+              background: "#334155",
               border: "none",
               borderRadius: 8,
-              color: "#fff",
+              color: "#e2e8f0",
               padding: "12px 16px",
               fontSize: 14,
               fontWeight: 600,
               cursor: "pointer",
               marginBottom: 20
             }}>
-            <IconCamera />{t("scan")}
+            <IconHome />{t("home")}
           </button>
 
           <div style={{ marginBottom: 16 }}>
