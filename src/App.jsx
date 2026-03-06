@@ -250,7 +250,7 @@ export default function App() {
           <div style={{ marginBottom: 10 }}>
             <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("uwpCode")}</label>
             <div className="uwp-row">
-              <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center" }} />
+              <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 18, fontFamily: "monospace", fontWeight: 700, letterSpacing: 2, textAlign: "center" }} />
               <input
                 type="file"
                 accept="image/*"
@@ -268,12 +268,12 @@ export default function App() {
                   borderRadius: 8,
                   color: "#fff",
                   padding: "10px 16px",
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: 600,
                   cursor: scanning ? "wait" : "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  justifyContent: "center",
                   whiteSpace: "nowrap"
                 }}>
                 {scanning ? "..." : t("scan")}
@@ -297,7 +297,7 @@ export default function App() {
                 borderRadius: 8,
                 color: canSave ? "#fff" : "#64748b",
                 padding: "10px 16px",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 600,
                 cursor: canSave ? "pointer" : "not-allowed"
               }}>
@@ -306,12 +306,13 @@ export default function App() {
             <button
               onClick={() => setShowSaved(!showSaved)}
               style={{
+                flex: 1,
                 background: "#334155",
                 border: "none",
                 borderRadius: 8,
                 color: "#e2e8f0",
                 padding: "10px 16px",
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 600,
                 cursor: "pointer"
               }}>
