@@ -491,11 +491,11 @@ export function getLAW_ARMOR(lang) {
   return {
     es: [
       "Sin restricciones", "Traje de combate", "Armadura de combate", "Chaleco antibalas",
-      "Tejido", "Malla", "", "", "Toda armadura visible", "Todas las armaduras",
+      "Tejido", "Malla", "Jack", "Nada visible", "Toda armadura visible", "Todas las armaduras",
     ],
     en: [
       "No restrictions", "Battle dress", "Combat armor", "Flak jacket",
-      "Cloth", "Mesh", "", "", "All visible armor", "All armor",
+      "Cloth", "Mesh", "Jack", "Nothing visible", "All visible armor", "All armor",
     ],
   }[lang];
 }

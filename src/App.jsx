@@ -9,30 +9,30 @@ const UWP_PATTERN = /[ABCDEX][0-9A-F]{6}[-\s]?[0-9A-F]/gi;
 
 const ZONE_COLORS = { A: "#f59e0b", R: "#ef4444" };
 
-// Flat icons
+// Flat icons (decorative, hidden from screen readers)
 const IconCamera = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
     <circle cx="12" cy="13" r="4"/>
   </svg>
 );
 
 const IconClock = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
     <circle cx="12" cy="12" r="10"/>
     <polyline points="12 6 12 12 16 14"/>
   </svg>
 );
 
 const IconSearch = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
     <circle cx="11" cy="11" r="8"/>
     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 );
 
 const IconTrash = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
     <polyline points="3 6 5 6 21 6"/>
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
   </svg>
@@ -78,11 +78,24 @@ export default function App() {
   const LAW_ARMOR = useMemo(() => getLAW_ARMOR(lang), [lang]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("traveller-recent");
-    if (stored) {
-      setRecentPlanets(JSON.parse(stored));
+    try {
+      const stored = localStorage.getItem("traveller-recent");
+      if (stored) {
+        setRecentPlanets(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to load recent planets:", e);
+      localStorage.removeItem("traveller-recent");
     }
   }, []);
+
+  const resetDecoder = () => {
+    setName("");
+    setUwp("");
+    setZoneInput("V");
+    setScanStatus("");
+    setView("decoder");
+  };
 
   const loadPlanet = (planet) => {
     setName(planet.name);
@@ -245,26 +258,30 @@ export default function App() {
     return { sp, sz, at, hy, po, go, la, tl };
   }, [uwp, STARPORT]);
 
-  // Auto-save to recent when UWP is valid
+  // Auto-save to recent when navigating to planet view with valid UWP
+  const lastSavedUwp = useRef("");
   useEffect(() => {
-    if (parsed && uwp.trim()) {
-      const planet = {
-        name: name.trim() || uwp.toUpperCase(),
-        uwp: uwp.toUpperCase(),
-        zone: zoneInput,
-        timestamp: Date.now()
-      };
+    if (view === "planet" && parsed && uwp.trim()) {
+      const normalizedUwp = uwp.toUpperCase();
+      // Only save if UWP changed
+      if (lastSavedUwp.current !== normalizedUwp) {
+        lastSavedUwp.current = normalizedUwp;
+        const planet = {
+          name: name.trim() || normalizedUwp,
+          uwp: normalizedUwp,
+          zone: zoneInput,
+          timestamp: Date.now()
+        };
 
-      setRecentPlanets(prev => {
-        // Remove duplicate (same UWP)
-        const filtered = prev.filter(p => p.uwp !== planet.uwp);
-        // Add to beginning, limit to 20
-        const updated = [planet, ...filtered].slice(0, 20);
-        localStorage.setItem("traveller-recent", JSON.stringify(updated));
-        return updated;
-      });
+        setRecentPlanets(prev => {
+          const filtered = prev.filter(p => p.uwp !== planet.uwp);
+          const updated = [planet, ...filtered].slice(0, 20);
+          localStorage.setItem("traveller-recent", JSON.stringify(updated));
+          return updated;
+        });
+      }
     }
-  }, [parsed, uwp, name, zoneInput]);
+  }, [view, uwp, parsed]);
 
   // Zone display name helper
   const getZoneName = (zone) => {
@@ -273,11 +290,17 @@ export default function App() {
     return t("zoneGreen");
   };
 
-  // Planet Detail View (fallback to decoder if no valid UWP)
+  // Redirect to decoder if planet view has no valid UWP
+  useEffect(() => {
+    if (view === "planet" && !parsed) {
+      setView("decoder");
+    }
+  }, [view, parsed]);
+
+  // Planet Detail View
   if (view === "planet") {
     if (!parsed) {
-      setView("decoder");
-      return null;
+      return null; // Will redirect via useEffect
     }
     return (
       <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
@@ -285,13 +308,7 @@ export default function App() {
           {/* Header with navigation */}
           <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
             <button
-              onClick={() => {
-                setName("");
-                setUwp("");
-                setZoneInput("V");
-                setScanStatus("");
-                setView("decoder");
-              }}
+              onClick={resetDecoder}
               style={{
                 flex: 1,
                 background: "#8b5cf6",
@@ -451,13 +468,7 @@ export default function App() {
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
           {/* Navigation button */}
           <button
-            onClick={() => {
-              setName("");
-              setUwp("");
-              setZoneInput("V");
-              setScanStatus("");
-              setView("decoder");
-            }}
+            onClick={resetDecoder}
             style={{
               width: "100%",
               background: "#8b5cf6",
@@ -504,8 +515,8 @@ export default function App() {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {recentPlanets.map((planet, i) => (
-                <div key={i} style={{ background: "#1e293b", borderRadius: 12, padding: 16 }}>
+              {recentPlanets.map((planet) => (
+                <div key={planet.uwp} style={{ background: "#1e293b", borderRadius: 12, padding: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                     <div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>{planet.name}</div>
@@ -575,12 +586,12 @@ export default function App() {
         <div style={{ background: "#1e293b", borderRadius: 12, padding: 20, marginBottom: 16 }}>
           <div className="form-grid">
             <div>
-              <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("worldName")}</label>
-              <input value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }} />
+              <label htmlFor="world-name" style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("worldName")}</label>
+              <input id="world-name" value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }} />
             </div>
             <div>
-              <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("zone")}</label>
-              <select value={zoneInput} onChange={e => setZoneInput(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }}>
+              <label htmlFor="zone-select" style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("zone")}</label>
+              <select id="zone-select" value={zoneInput} onChange={e => setZoneInput(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }}>
                 <option value="V">{t("zoneGreen")}</option>
                 <option value="A">{t("zoneAmber")}</option>
                 <option value="R">{t("zoneRed")}</option>
@@ -589,9 +600,9 @@ export default function App() {
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("uwpCode")}</label>
+            <label htmlFor="uwp-code" style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("uwpCode")}</label>
             <div className="uwp-row">
-              <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 18, fontFamily: "monospace", fontWeight: 700, letterSpacing: 2, textAlign: "center" }} />
+              <input id="uwp-code" value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 18, fontFamily: "monospace", fontWeight: 700, letterSpacing: 2, textAlign: "center" }} />
               <input
                 type="file"
                 accept="image/*"
