@@ -178,7 +178,7 @@ export default function App() {
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>Mongoose Traveller</div>
           <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Universal World Profile (UWP)
+            Universal World Profile Decoder
           </h1>
         </div>
 
