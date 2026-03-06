@@ -360,9 +360,23 @@ export default function App() {
               }}
             />
             <div style={{ fontFamily: "monospace", fontSize: 16, color: "#94a3b8", letterSpacing: 2, marginBottom: 8 }}>{uwp.toUpperCase()}</div>
-            {(zoneInput === "A" || zoneInput === "R") && (
-              <Badge text={`${t("zoneLabel")} ${getZoneName(zoneInput)}`} color={ZONE_COLORS[zoneInput]} />
-            )}
+            <select
+              value={zoneInput}
+              onChange={e => setZoneInput(e.target.value)}
+              style={{
+                background: zoneInput === "R" ? "#ef444433" : zoneInput === "A" ? "#f59e0b33" : "#10b98133",
+                border: `1px solid ${zoneInput === "R" ? "#ef4444" : zoneInput === "A" ? "#f59e0b" : "#10b981"}`,
+                borderRadius: 6,
+                color: zoneInput === "R" ? "#ef4444" : zoneInput === "A" ? "#f59e0b" : "#10b981",
+                padding: "4px 8px",
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: "pointer"
+              }}>
+              <option value="V">{t("zoneGreen")}</option>
+              <option value="A">{t("zoneAmber")}</option>
+              <option value="R">{t("zoneRed")}</option>
+            </select>
           </div>
 
           {/* Planet details */}
