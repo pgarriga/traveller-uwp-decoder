@@ -258,30 +258,31 @@ export default function App() {
     return { sp, sz, at, hy, po, go, la, tl };
   }, [uwp, STARPORT]);
 
-  // Auto-save to recent when navigating to planet view with valid UWP
+  // Auto-save to recent when on planet view
   const lastSavedUwp = useRef("");
   useEffect(() => {
     if (view === "planet" && parsed && uwp.trim()) {
       const normalizedUwp = uwp.toUpperCase();
-      // Only save if UWP changed
+      // Save when entering planet view with new UWP
       if (lastSavedUwp.current !== normalizedUwp) {
         lastSavedUwp.current = normalizedUwp;
-        const planet = {
-          name: name.trim() || normalizedUwp,
-          uwp: normalizedUwp,
-          zone: zoneInput,
-          timestamp: Date.now()
-        };
-
-        setRecentPlanets(prev => {
-          const filtered = prev.filter(p => p.uwp !== planet.uwp);
-          const updated = [planet, ...filtered].slice(0, 20);
-          localStorage.setItem("traveller-recent", JSON.stringify(updated));
-          return updated;
-        });
       }
+      // Always update the planet data
+      const planet = {
+        name: name.trim() || normalizedUwp,
+        uwp: normalizedUwp,
+        zone: zoneInput,
+        timestamp: Date.now()
+      };
+
+      setRecentPlanets(prev => {
+        const filtered = prev.filter(p => p.uwp !== planet.uwp);
+        const updated = [planet, ...filtered].slice(0, 20);
+        localStorage.setItem("traveller-recent", JSON.stringify(updated));
+        return updated;
+      });
     }
-  }, [view, uwp, parsed]);
+  }, [view, uwp, parsed, name, zoneInput]);
 
   // Zone display name helper
   const getZoneName = (zone) => {
