@@ -11,15 +11,15 @@ const ZONE_COLORS = { A: "#f59e0b", R: "#ef4444" };
 
 const Section = ({ title, children, color = "#3b82f6" }) => (
   <div style={{ background: "#1e293b", borderRadius: 12, padding: "16px 20px", marginBottom: 12, borderLeft: `4px solid ${color}` }}>
-    <div style={{ color, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{title}</div>
+    <div className="section-title" style={{ color, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{title}</div>
     {children}
   </div>
 );
 
 const Row = ({ label, value, warn }) => (
-  <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #334155" }}>
-    <span style={{ color: "#94a3b8", fontSize: 13 }}>{label}</span>
-    <span style={{ color: warn ? "#f59e0b" : "#e2e8f0", fontSize: 13, fontWeight: 500, textAlign: "right", maxWidth: "60%" }}>{value}</span>
+  <div className="data-row">
+    <span className="data-row-label">{label}</span>
+    <span className="data-row-value" style={{ color: warn ? "#f59e0b" : "#e2e8f0" }}>{value}</span>
   </div>
 );
 
@@ -174,13 +174,13 @@ export default function App() {
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>{t("subtitle")}</div>
-          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <h1 className="app-title">
             {t("title")}
           </h1>
         </div>
 
         <div style={{ background: "#1e293b", borderRadius: 12, padding: 20, marginBottom: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, marginBottom: 10 }}>
+          <div className="form-grid">
             <div>
               <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("worldName")}</label>
               <input value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }} />
@@ -197,8 +197,8 @@ export default function App() {
 
           <div style={{ marginBottom: 10 }}>
             <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("uwpCode")}</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center", boxSizing: "border-box" }} />
+            <div className="uwp-row">
+              <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center" }} />
               <input
                 type="file"
                 accept="image/*"
@@ -234,7 +234,7 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <div className="button-row">
             <button
               onClick={savePlanet}
               disabled={!canSave}
@@ -281,17 +281,17 @@ export default function App() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {savedPlanets.map((planet, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#1e293b", borderRadius: 6, padding: "8px 12px" }}>
-                      <div style={{ cursor: "pointer", flex: 1 }} onClick={() => loadPlanet(planet)}>
+                    <div key={i} className="planet-item" style={{ background: "#1e293b", borderRadius: 6, padding: "8px 12px" }}>
+                      <div className="planet-info" style={{ cursor: "pointer" }} onClick={() => loadPlanet(planet)}>
                         <span style={{ fontWeight: 600, color: "#e2e8f0" }}>{planet.name}</span>
-                        <span style={{ marginLeft: 8, fontFamily: "monospace", fontSize: 12, color: "#94a3b8" }}>{planet.uwp}</span>
+                        <span className="uwp-code" style={{ marginLeft: 8, fontFamily: "monospace", fontSize: 12, color: "#94a3b8" }}>{planet.uwp}</span>
                         <span style={{ marginLeft: 8, fontSize: 11, color: planet.zone === "R" ? "#ef4444" : planet.zone === "A" ? "#f59e0b" : "#10b981" }}>
                           {getZoneName(planet.zone)}
                         </span>
                       </div>
                       <button
                         onClick={() => deletePlanet(planet.name)}
-                        style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "4px 8px", fontSize: 12 }}>
+                        style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", padding: "4px 8px", fontSize: 12, minHeight: "auto" }}>
                         {t("delete")}
                       </button>
                     </div>
