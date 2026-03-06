@@ -89,6 +89,11 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset current values before scanning
+    setUwp("");
+    setName("");
+    setScanStatus("");
+
     setScanning(true);
     setScanStatus(t("loadingOcr"));
 
@@ -98,6 +103,11 @@ export default function App() {
 
       const { data: { text } } = await worker.recognize(file);
       await worker.terminate();
+
+      // Debug: log OCR result
+      console.log("=== OCR Result ===");
+      console.log(text);
+      console.log("==================");
 
       // Find UWP codes in the text
       const matches = text.match(UWP_PATTERN);
@@ -112,24 +122,66 @@ export default function App() {
         setUwp(formattedUwp);
         setScanStatus(`${t("uwpDetected")}: ${formattedUwp}`);
 
-        // Try to find a planet name (heuristic: capitalized word near UWP)
-        const uwpIndex = text.toUpperCase().indexOf(matches[0].toUpperCase());
-        const textBefore = text.slice(Math.max(0, uwpIndex - 50), uwpIndex);
-        const textAfter = text.slice(uwpIndex + matches[0].length, uwpIndex + matches[0].length + 50);
-        const surroundingText = textBefore + " " + textAfter;
+        // Try to find planet name (it's BELOW the UWP code, with larger font)
+        const uwpIndex = text.indexOf(matches[0]);
+        const textAfter = text.slice(uwpIndex + matches[0].length, uwpIndex + matches[0].length + 150);
 
-        // Look for capitalized words (potential planet names)
-        const namePattern = /\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]+)*)\b/g;
-        const nameMatches = surroundingText.match(namePattern);
+        // Common words to filter out
+        const commonWords = [
+          "THE", "AND", "FOR", "WITH", "FROM", "ZONE", "RED", "AMBER", "GREEN",
+          "UWP", "WORLD", "PLANET", "STARPORT", "CLASS", "SIZE", "ATMOSPHERE",
+          "POPULATION", "GOVERNMENT", "LAW", "TECH", "LEVEL", "TRAVEL", "NAME",
+          "PROFILE", "UNIVERSAL", "DATA", "INFO", "SYSTEM", "SECTOR", "BASES",
+          "FACILITIES", "ALLEGIANCE", "REMARKS", "TRADE", "CODES", "GAS", "GIANT"
+        ];
 
-        if (nameMatches && nameMatches.length > 0) {
-          // Filter out common words that aren't planet names
-          const commonWords = ["The", "And", "For", "With", "From", "Zone", "Red", "Amber", "Green"];
-          const potentialName = nameMatches.find(n => !commonWords.includes(n));
-          if (potentialName && !name) {
-            setName(potentialName);
-            setScanStatus(prev => `${prev} | ${t("nameDetected")}: ${potentialName}`);
+        // Split by lines and look at the lines AFTER the UWP
+        const lines = text.split(/[\n\r]+/);
+        const uwpLineIndex = lines.findIndex(line => line.includes(matches[0]));
+
+        let detectedName = null;
+
+        // Strategy 1: Check the next few lines after UWP line
+        if (uwpLineIndex >= 0) {
+          for (let i = uwpLineIndex + 1; i < Math.min(uwpLineIndex + 4, lines.length); i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            // Clean the line
+            const cleaned = line.replace(/[^a-zA-Z\s'-]/g, "").trim();
+
+            // Skip if too short, too long, or is a common word
+            if (cleaned.length < 2 || cleaned.length > 35) continue;
+            if (commonWords.includes(cleaned.toUpperCase())) continue;
+
+            // Skip if looks like a UWP code or numbers
+            if (/^[ABCDEX][0-9A-F]/i.test(cleaned)) continue;
+
+            // Found a potential name
+            detectedName = cleaned.split(/\s+/).map(w =>
+              w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+            ).join(" ");
+            break;
           }
+        }
+
+        // Strategy 2: Fallback - look for capitalized words in text after UWP
+        if (!detectedName) {
+          const capsPattern = /\b([A-Z][A-Za-z'-]{2,}(?:\s+[A-Z][A-Za-z'-]+)*)\b/g;
+          const capsMatches = textAfter.match(capsPattern) || [];
+          const filtered = capsMatches.filter(w =>
+            w.length >= 3 &&
+            w.length <= 35 &&
+            !commonWords.includes(w.toUpperCase())
+          );
+          if (filtered.length > 0) {
+            detectedName = filtered[0];
+          }
+        }
+
+        if (detectedName) {
+          setName(detectedName);
+          setScanStatus(prev => `${prev} | ${t("nameDetected")}: ${detectedName}`);
         }
       } else {
         setScanStatus(t("noUwpFound"));
