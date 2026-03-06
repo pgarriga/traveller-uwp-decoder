@@ -97,7 +97,34 @@ input.planet-name {
   gap: 8px;
 }
 
+/* Navbar - desktop shows links, mobile shows hamburger */
+.nav-desktop {
+  display: flex;
+}
+
+.nav-mobile-toggle {
+  display: none !important;
+}
+
+.nav-mobile-menu {
+  display: none;
+}
+
 /* Mobile styles */
+@media (max-width: 640px) {
+  .nav-desktop {
+    display: none !important;
+  }
+
+  .nav-mobile-toggle {
+    display: flex !important;
+  }
+
+  .nav-mobile-menu {
+    display: flex !important;
+  }
+}
+
 @media (max-width: 480px) {
   .app-title {
     font-size: 28px;

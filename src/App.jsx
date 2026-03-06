@@ -38,10 +38,18 @@ const IconTrash = () => (
   </svg>
 );
 
-const IconHome = () => (
-  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-    <polyline points="9 22 9 12 15 12 15 22"/>
+const IconMenu = () => (
+  <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+
+const IconClose = () => (
+  <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 
@@ -100,6 +108,7 @@ export default function App() {
   const [name, setName] = useState("");
   const [zoneInput, setZoneInput] = useState("V");
   const [recentPlanets, setRecentPlanets] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [view, setView] = useState("decoder"); // "decoder" | "saved" | "planet"
   const [scanning, setScanning] = useState(false);
@@ -201,6 +210,7 @@ export default function App() {
     const url = buildUrl(newView, newUwp);
     window.history.pushState({ view: newView, uwp: newUwp }, "", url);
     setView(newView);
+    setMenuOpen(false);
   };
 
   const resetDecoder = () => {
@@ -210,6 +220,147 @@ export default function App() {
     setScanStatus("");
     navigateTo("decoder");
   };
+
+  // Navbar component
+  const Navbar = () => (
+    <>
+      <nav style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 56,
+        background: "#1e293b",
+        borderBottom: "1px solid #334155",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 16px",
+        zIndex: 1000
+      }}>
+        {/* Logo */}
+        <div
+          onClick={resetDecoder}
+          style={{
+            fontSize: 18,
+            fontWeight: 800,
+            background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            cursor: "pointer"
+          }}>
+          UWP Decoder
+        </div>
+
+        {/* Desktop nav links */}
+        <div className="nav-desktop" style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={resetDecoder}
+            style={{
+              background: view === "decoder" ? "#334155" : "transparent",
+              border: "none",
+              borderRadius: 8,
+              color: view === "decoder" ? "#e2e8f0" : "#94a3b8",
+              padding: "8px 16px",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}>
+            <IconCamera />{t("scan")}
+          </button>
+          <button
+            onClick={() => navigateTo("saved")}
+            style={{
+              background: view === "saved" ? "#334155" : "transparent",
+              border: "none",
+              borderRadius: 8,
+              color: view === "saved" ? "#e2e8f0" : "#94a3b8",
+              padding: "8px 16px",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}>
+            <IconClock />{t("viewRecent")}
+          </button>
+        </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="nav-mobile-toggle"
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{
+            display: "none",
+            background: "transparent",
+            border: "none",
+            color: "#e2e8f0",
+            padding: 8,
+            cursor: "pointer"
+          }}>
+          {menuOpen ? <IconClose /> : <IconMenu />}
+        </button>
+      </nav>
+
+      {/* Mobile menu overlay */}
+      {menuOpen && (
+        <div
+          className="nav-mobile-menu"
+          style={{
+            position: "fixed",
+            top: 56,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "#0f172aee",
+            zIndex: 999,
+            padding: 16,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8
+          }}>
+          <button
+            onClick={resetDecoder}
+            style={{
+              background: view === "decoder" ? "#334155" : "#1e293b",
+              border: "none",
+              borderRadius: 8,
+              color: "#e2e8f0",
+              padding: "16px",
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}>
+            <IconCamera />{t("scan")}
+          </button>
+          <button
+            onClick={() => navigateTo("saved")}
+            style={{
+              background: view === "saved" ? "#334155" : "#1e293b",
+              border: "none",
+              borderRadius: 8,
+              color: "#e2e8f0",
+              padding: "16px",
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}>
+            <IconClock />{t("viewRecent")}
+          </button>
+        </div>
+      )}
+
+      {/* Spacer for fixed navbar */}
+      <div style={{ height: 56 }} />
+    </>
+  );
 
   const loadPlanet = (planet) => {
     setName(planet.name);
@@ -406,41 +557,8 @@ export default function App() {
     }
     return (
       <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+        <Navbar />
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
-          {/* Header with navigation */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-            <button
-              onClick={resetDecoder}
-              style={{
-                flex: 1,
-                background: "#334155",
-                border: "none",
-                borderRadius: 8,
-                color: "#e2e8f0",
-                padding: "12px 16px",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer"
-              }}>
-              <IconHome />{t("home")}
-            </button>
-            <button
-              onClick={() => navigateTo("saved")}
-              style={{
-                flex: 1,
-                background: "#334155",
-                border: "none",
-                borderRadius: 8,
-                color: "#e2e8f0",
-                padding: "12px 16px",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer"
-              }}>
-              <IconClock />{t("viewRecent")}
-            </button>
-          </div>
-
           {/* Planet header */}
           <div style={{ background: "linear-gradient(135deg, #1e3a5f, #1e293b)", borderRadius: 12, padding: 20, marginBottom: 16, textAlign: "center" }}>
             <input
@@ -583,25 +701,8 @@ export default function App() {
   if (view === "saved") {
     return (
       <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+        <Navbar />
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
-          {/* Navigation button */}
-          <button
-            onClick={resetDecoder}
-            style={{
-              width: "100%",
-              background: "#334155",
-              border: "none",
-              borderRadius: 8,
-              color: "#e2e8f0",
-              padding: "12px 16px",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-              marginBottom: 20
-            }}>
-            <IconHome />{t("home")}
-          </button>
-
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#e2e8f0" }}>
@@ -682,6 +783,7 @@ export default function App() {
   // Scan View (simplified)
   return (
     <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <Navbar />
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>{t("subtitle")}</div>
@@ -780,27 +882,6 @@ export default function App() {
             </div>
           )}
         </div>
-
-        {/* Recent button */}
-        <button
-          onClick={() => navigateTo("saved")}
-          style={{
-            width: "100%",
-            background: "#1e293b",
-            border: "none",
-            borderRadius: 12,
-            color: "#e2e8f0",
-            padding: "14px 16px",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8
-          }}>
-          <IconClock />{t("viewRecent")} ({recentPlanets.length})
-        </button>
 
         <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#475569" }}>
           {t("disclaimer")}<br />
