@@ -91,6 +91,12 @@ input.planet-name {
   background-clip: text;
 }
 
+/* Manual input row */
+.manual-input-row {
+  display: flex;
+  gap: 8px;
+}
+
 /* Mobile styles */
 @media (max-width: 480px) {
   .app-title {
@@ -114,6 +120,14 @@ input.planet-name {
   .uwp-row button {
     width: 100%;
     justify-content: center;
+  }
+
+  .manual-input-row {
+    flex-direction: column;
+  }
+
+  .manual-input-row button {
+    width: 100%;
   }
 
   .button-row {

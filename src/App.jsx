@@ -572,113 +572,128 @@ export default function App() {
     );
   }
 
-  // Scan View (input only)
+  // Scan View (simplified)
   return (
     <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{ fontSize: 11, color: "#f59e0b", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>{t("subtitle")}</div>
           <h1 className="app-title">
             {t("title")}
           </h1>
         </div>
 
-        <div style={{ background: "#1e293b", borderRadius: 12, padding: 20, marginBottom: 16 }}>
-          <div className="form-grid">
-            <div>
-              <label htmlFor="world-name" style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("worldName")}</label>
-              <input id="world-name" value={name} onChange={e => setName(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }} />
-            </div>
-            <div>
-              <label htmlFor="zone-select" style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("zone")}</label>
-              <select id="zone-select" value={zoneInput} onChange={e => setZoneInput(e.target.value)} style={{ width: "100%", background: "#0f172a", border: "1px solid #334155", borderRadius: 8, padding: "8px 12px", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box" }}>
-                <option value="V">{t("zoneGreen")}</option>
-                <option value="A">{t("zoneAmber")}</option>
-                <option value="R">{t("zoneRed")}</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label htmlFor="uwp-code" style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: 4 }}>{t("uwpCode")}</label>
-            <div className="uwp-row">
-              <input id="uwp-code" value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 18, fontFamily: "monospace", fontWeight: 700, letterSpacing: 2, textAlign: "center" }} />
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleScan}
-                style={{ display: "none" }}
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={scanning}
-                style={{
-                  background: scanning ? "#334155" : "#8b5cf6",
-                  border: "none",
-                  borderRadius: 8,
-                  color: "#fff",
-                  padding: "10px 16px",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: scanning ? "wait" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  whiteSpace: "nowrap"
-                }}>
-                {scanning ? "..." : <><IconCamera />{t("scan")}</>}
-              </button>
-            </div>
-            {scanStatus && (
-              <div style={{ fontSize: 11, color: scanStatus.includes(t("uwpDetected")) ? "#10b981" : "#f59e0b", marginTop: 6 }}>
-                {scanStatus}
-              </div>
-            )}
-          </div>
-
-          {/* Decode button */}
+        {/* Main scan button */}
+        <div style={{ background: "#1e293b", borderRadius: 12, padding: 24, marginBottom: 16 }}>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleScan}
+            style={{ display: "none" }}
+          />
           <button
-            onClick={() => setView("planet")}
-            disabled={!parsed}
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={scanning}
             style={{
               width: "100%",
-              background: parsed ? "#3b82f6" : "#334155",
+              background: scanning ? "#334155" : "#8b5cf6",
               border: "none",
-              borderRadius: 8,
-              color: parsed ? "#fff" : "#64748b",
-              padding: "12px 16px",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: parsed ? "pointer" : "not-allowed",
-              marginBottom: 12
+              borderRadius: 12,
+              color: "#fff",
+              padding: "24px 20px",
+              fontSize: 18,
+              fontWeight: 700,
+              cursor: scanning ? "wait" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10
             }}>
-            {t("decode")}
+            <IconCamera />
+            {scanning ? t("scanning") : t("scan")}
           </button>
+          {scanStatus && (
+            <div style={{ fontSize: 12, color: scanStatus.includes(t("uwpDetected")) ? "#10b981" : "#f59e0b", marginTop: 12, textAlign: "center" }}>
+              {scanStatus}
+            </div>
+          )}
 
-          <button
-            onClick={() => setView("saved")}
-            style={{
-              width: "100%",
-              background: "#334155",
-              border: "none",
-              borderRadius: 8,
-              color: "#e2e8f0",
-              padding: "10px 16px",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer"
-            }}>
-            <IconClock />{t("viewRecent")} ({recentPlanets.length})
-          </button>
+          {/* Separator */}
+          <div style={{ display: "flex", alignItems: "center", margin: "20px 0", gap: 12 }}>
+            <div style={{ flex: 1, height: 1, background: "#334155" }} />
+            <span style={{ color: "#64748b", fontSize: 12 }}>{t("or")}</span>
+            <div style={{ flex: 1, height: 1, background: "#334155" }} />
+          </div>
+
+          {/* Manual input (secondary) */}
+          <div style={{ textAlign: "center", marginBottom: 12 }}>
+            <span style={{ fontSize: 12, color: "#64748b" }}>{t("enterManually")}</span>
+          </div>
+          <div className="manual-input-row">
+            <input
+              id="uwp-code"
+              value={uwp}
+              onChange={e => setUwp(e.target.value)}
+              placeholder={t("uwpPlaceholder")}
+              style={{
+                flex: 1,
+                background: "#0f172a",
+                border: "1px solid #334155",
+                borderRadius: 8,
+                padding: "10px 14px",
+                color: "#e2e8f0",
+                fontSize: 14,
+                fontFamily: "monospace",
+                fontWeight: 600,
+                letterSpacing: 1,
+                textAlign: "center"
+              }}
+            />
+            <button
+              onClick={() => setView("planet")}
+              disabled={!parsed}
+              style={{
+                background: parsed ? "#3b82f6" : "#334155",
+                border: "none",
+                borderRadius: 8,
+                color: parsed ? "#fff" : "#64748b",
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: parsed ? "pointer" : "not-allowed"
+              }}>
+              {t("decode")}
+            </button>
+          </div>
+          {!parsed && uwp.trim() && (
+            <div style={{ textAlign: "center", marginTop: 8, color: "#f59e0b", fontSize: 11 }}>
+              {t("invalidUwp")}
+            </div>
+          )}
         </div>
 
-        {!parsed && uwp.trim() && (
-          <div style={{ textAlign: "center", padding: 20, color: "#f59e0b", fontSize: 13 }}>
-            {t("invalidUwp")}
-          </div>
-        )}
+        {/* Recent button */}
+        <button
+          onClick={() => setView("saved")}
+          style={{
+            width: "100%",
+            background: "#1e293b",
+            border: "none",
+            borderRadius: 12,
+            color: "#e2e8f0",
+            padding: "14px 16px",
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8
+          }}>
+          <IconClock />{t("viewRecent")} ({recentPlanets.length})
+        </button>
 
         <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#475569" }}>
           {t("disclaimer")}<br />
