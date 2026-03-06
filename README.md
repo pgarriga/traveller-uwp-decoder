@@ -1,5 +1,6 @@
 # Traveller UWP Decoder
 
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)](https://github.com/pgarriga/traveller-uwp-decoder)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tesseract.js](https://img.shields.io/badge/Tesseract.js-7.0-4285F4?style=flat-square&logo=google&logoColor=white)](https://tesseract.projectnaptha.com/)
