@@ -139,6 +139,15 @@ const translations = {
     varies: "Varía",
     na: "N/A",
     free: "Gratis",
+
+    // Scanner
+    scan: "Escanear",
+    scanning: "Escaneando...",
+    scanError: "Error al procesar la imagen",
+    noUwpFound: "No se encontró código UWP en la imagen",
+    uwpDetected: "UWP detectado",
+    nameDetected: "Nombre detectado",
+    loadingOcr: "Cargando OCR...",
   },
 
   en: {
@@ -270,6 +279,15 @@ const translations = {
     varies: "Varies",
     na: "N/A",
     free: "Free",
+
+    // Scanner
+    scan: "Scan",
+    scanning: "Scanning...",
+    scanError: "Error processing image",
+    noUwpFound: "No UWP code found in image",
+    uwpDetected: "UWP detected",
+    nameDetected: "Name detected",
+    loadingOcr: "Loading OCR...",
   },
 };
 

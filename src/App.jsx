@@ -1,7 +1,11 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { createWorker } from "tesseract.js";
 import { useTranslation, getSTARPORT, getSIZE, getATMO, getHYDRO, getPOP, getGOV, getLAW_WEAPONS, getLAW_ARMOR } from "./i18n";
 
 const hex = v => parseInt(v, 16);
+
+// UWP pattern: letter (A-E or X) + 6 hex digits + optional dash + 1 hex digit (tech level)
+const UWP_PATTERN = /[ABCDEX][0-9A-F]{6}[-\s]?[0-9A-F]/gi;
 
 const ZONE_COLORS = { A: "#f59e0b", R: "#ef4444" };
 
@@ -30,6 +34,9 @@ export default function App() {
   const [zoneInput, setZoneInput] = useState("V");
   const [savedPlanets, setSavedPlanets] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanStatus, setScanStatus] = useState("");
+  const fileInputRef = useRef(null);
 
   // Get translated game data
   const STARPORT = useMemo(() => getSTARPORT(t)[lang], [lang, t]);
@@ -75,6 +82,68 @@ export default function App() {
     const newPlanets = savedPlanets.filter(p => p.name !== planetName);
     setSavedPlanets(newPlanets);
     localStorage.setItem("traveller-planets", JSON.stringify(newPlanets));
+  };
+
+  // OCR Scanner function
+  const handleScan = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setScanning(true);
+    setScanStatus(t("loadingOcr"));
+
+    try {
+      const worker = await createWorker("eng");
+      setScanStatus(t("scanning"));
+
+      const { data: { text } } = await worker.recognize(file);
+      await worker.terminate();
+
+      // Find UWP codes in the text
+      const matches = text.match(UWP_PATTERN);
+
+      if (matches && matches.length > 0) {
+        // Clean and format the first match
+        const detectedUwp = matches[0].replace(/\s/g, "").toUpperCase();
+        // Ensure proper format with dash
+        const formattedUwp = detectedUwp.length === 8 && !detectedUwp.includes("-")
+          ? detectedUwp.slice(0, 7) + "-" + detectedUwp.slice(7)
+          : detectedUwp;
+        setUwp(formattedUwp);
+        setScanStatus(`${t("uwpDetected")}: ${formattedUwp}`);
+
+        // Try to find a planet name (heuristic: capitalized word near UWP)
+        const uwpIndex = text.toUpperCase().indexOf(matches[0].toUpperCase());
+        const textBefore = text.slice(Math.max(0, uwpIndex - 50), uwpIndex);
+        const textAfter = text.slice(uwpIndex + matches[0].length, uwpIndex + matches[0].length + 50);
+        const surroundingText = textBefore + " " + textAfter;
+
+        // Look for capitalized words (potential planet names)
+        const namePattern = /\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]+)*)\b/g;
+        const nameMatches = surroundingText.match(namePattern);
+
+        if (nameMatches && nameMatches.length > 0) {
+          // Filter out common words that aren't planet names
+          const commonWords = ["The", "And", "For", "With", "From", "Zone", "Red", "Amber", "Green"];
+          const potentialName = nameMatches.find(n => !commonWords.includes(n));
+          if (potentialName && !name) {
+            setName(potentialName);
+            setScanStatus(prev => `${prev} | ${t("nameDetected")}: ${potentialName}`);
+          }
+        }
+      } else {
+        setScanStatus(t("noUwpFound"));
+      }
+    } catch (error) {
+      console.error("OCR Error:", error);
+      setScanStatus(t("scanError"));
+    } finally {
+      setScanning(false);
+      // Clear file input for re-scanning
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const parsed = useMemo(() => {
@@ -128,7 +197,41 @@ export default function App() {
 
           <div style={{ marginBottom: 10 }}>
             <label style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>{t("uwpCode")}</label>
-            <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ width: "100%", background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center", boxSizing: "border-box" }} />
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={uwp} onChange={e => setUwp(e.target.value)} placeholder={t("uwpPlaceholder")} style={{ flex: 1, background: "#0f172a", border: "2px solid #3b82f6", borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 20, fontFamily: "monospace", fontWeight: 700, letterSpacing: 3, textAlign: "center", boxSizing: "border-box" }} />
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleScan}
+                style={{ display: "none" }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={scanning}
+                style={{
+                  background: scanning ? "#334155" : "#8b5cf6",
+                  border: "none",
+                  borderRadius: 8,
+                  color: "#fff",
+                  padding: "10px 16px",
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: scanning ? "wait" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  whiteSpace: "nowrap"
+                }}>
+                {scanning ? "..." : t("scan")}
+              </button>
+            </div>
+            {scanStatus && (
+              <div style={{ fontSize: 11, color: scanStatus.includes(t("uwpDetected")) ? "#10b981" : "#f59e0b", marginTop: 6 }}>
+                {scanStatus}
+              </div>
+            )}
           </div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
