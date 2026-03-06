@@ -14,6 +14,11 @@ input, select, textarea {
   font-size: 16px !important;
 }
 
+/* Planet name input - override default size */
+input.planet-name {
+  font-size: 32px !important;
+}
+
 /* Responsive grid for form */
 .form-grid {
   display: grid;
@@ -78,7 +83,7 @@ input, select, textarea {
 /* Title */
 .app-title {
   margin: 0;
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 800;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
@@ -89,7 +94,7 @@ input, select, textarea {
 /* Mobile styles */
 @media (max-width: 480px) {
   .app-title {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .form-grid {

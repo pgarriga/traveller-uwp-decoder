@@ -25,20 +25,15 @@ const translations = {
     uwpPlaceholder: "A788899-C",
 
     // Buttons
-    savePlanet: "Guardar planeta",
-    hide: "Ocultar",
-    viewSaved: "Ver guardados",
+    viewRecent: "Recientes",
+    decode: "Decodificar",
+    newScan: "Nuevo escaneo",
 
-    // Save validation
-    toSaveComplete: "Para guardar, completa:",
-    fieldName: "nombre",
-    fieldUwp: "código UWP",
-    fieldZone: "zona",
-
-    // Saved planets
-    savedPlanets: "Planetas guardados",
-    noSavedPlanets: "No hay planetas guardados",
+    // Recent planets
+    recentPlanets: "Recientes",
+    noRecentPlanets: "No hay planetas recientes",
     delete: "Eliminar",
+    clearAll: "Borrar todo",
 
     // Planet display
     unnamed: "Sin nombre",
@@ -148,6 +143,14 @@ const translations = {
     uwpDetected: "UWP detectado",
     nameDetected: "Nombre detectado",
     loadingOcr: "Cargando OCR...",
+
+    // Saved planets page
+    back: "Volver",
+    viewInfo: "Ver información",
+    confirmDelete: "¿Eliminar este planeta?",
+    planetCount: "planetas",
+    edit: "Editar",
+    newPlanet: "Nuevo planeta",
   },
 
   en: {
@@ -165,20 +168,15 @@ const translations = {
     uwpPlaceholder: "A788899-C",
 
     // Buttons
-    savePlanet: "Save planet",
-    hide: "Hide",
-    viewSaved: "View saved",
+    viewRecent: "Recent",
+    decode: "Decode",
+    newScan: "New scan",
 
-    // Save validation
-    toSaveComplete: "To save, complete:",
-    fieldName: "name",
-    fieldUwp: "UWP code",
-    fieldZone: "zone",
-
-    // Saved planets
-    savedPlanets: "Saved planets",
-    noSavedPlanets: "No saved planets",
+    // Recent planets
+    recentPlanets: "Recent",
+    noRecentPlanets: "No recent planets",
     delete: "Delete",
+    clearAll: "Clear all",
 
     // Planet display
     unnamed: "Unnamed",
@@ -288,6 +286,14 @@ const translations = {
     uwpDetected: "UWP detected",
     nameDetected: "Name detected",
     loadingOcr: "Loading OCR...",
+
+    // Saved planets page
+    back: "Back",
+    viewInfo: "View info",
+    confirmDelete: "Delete this planet?",
+    planetCount: "planets",
+    edit: "Edit",
+    newPlanet: "New planet",
   },
 };
 
