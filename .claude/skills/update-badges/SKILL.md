@@ -2,6 +2,8 @@
 name: update-badges
 description: Update README.md badges when library versions or project version changes in package.json
 allowed-tools: Read, Edit
+proactive: true
+trigger: after npm version, after dependency updates
 ---
 
 # Update README Badges
