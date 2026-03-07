@@ -276,8 +276,11 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 - `/check-responsive` - Verify responsive design works on all screen sizes
 - `/check-a11y` - Verify accessibility compliance
 
-### After updating dependencies or bumping version:
-- `/update-badges` - Sync README.md badges with package.json versions (including project version)
+### After updating dependencies:
+- `/update-badges` - Sync README.md badges with package.json versions
+
+### After bumping version (npm version patch/minor/major):
+- `/sync-version` - Sync version in README badges and verify build
 
 These checks ensure the app works well on mobile devices, is accessible to all users, and documentation stays current.
 
