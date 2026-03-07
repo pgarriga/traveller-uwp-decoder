@@ -1,0 +1,63 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get package.json version
+        id: package_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+
+      - name: Get latest release version
+        id: latest_release
+        run: |
+          LATEST=$(gh release view --json tagName -q .tagName 2>/dev/null || echo "v0.0.0")
+          # Remove 'v' prefix if present
+          LATEST=${LATEST#v}
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+          echo "Latest release: $LATEST"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare versions
+        id: compare
+        run: |
+          PKG_VERSION="${{ steps.package_version.outputs.version }}"
+          LATEST_VERSION="${{ steps.latest_release.outputs.version }}"
+
+          # Function to compare semver versions
+          version_gt() {
+            test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+          }
+
+          if version_gt "$PKG_VERSION" "$LATEST_VERSION"; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "New version detected: $PKG_VERSION > $LATEST_VERSION"
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "No new version: $PKG_VERSION <= $LATEST_VERSION"
+          fi
+
+      - name: Create Release
+        if: steps.compare.outputs.should_release == 'true'
+        run: |
+          VERSION="${{ steps.package_version.outputs.version }}"
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
