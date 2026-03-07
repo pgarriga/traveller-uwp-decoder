@@ -60,17 +60,17 @@ const IconSettings = () => (
   </svg>
 );
 
-const Section = ({ title, children, color = "#3b82f6" }) => (
-  <div style={{ background: "#1e293b", borderRadius: 12, padding: "16px 20px", marginBottom: 12, borderLeft: `4px solid ${color}` }}>
+const Section = ({ title, children, color = "#3b82f6", theme }) => (
+  <div style={{ background: theme?.bgCard || "#1e293b", borderRadius: 12, padding: "16px 20px", marginBottom: 12, borderLeft: `4px solid ${color}` }}>
     <div className="section-title" style={{ color, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{title}</div>
     {children}
   </div>
 );
 
-const Row = ({ label, value, warn }) => (
+const Row = ({ label, value, warn, theme }) => (
   <div className="data-row">
-    <span className="data-row-label">{label}</span>
-    <span className="data-row-value" style={{ color: warn ? "#f59e0b" : "#e2e8f0" }}>{value}</span>
+    <span className="data-row-label" style={{ color: theme?.textMuted }}>{label}</span>
+    <span className="data-row-value" style={{ color: warn ? "#f59e0b" : (theme?.text || "#e2e8f0") }}>{value}</span>
   </div>
 );
 
@@ -738,7 +738,7 @@ export default function App() {
                 border: "none",
                 borderBottom: "2px solid #3b82f644",
                 fontWeight: 800,
-                color: "#e2e8f0",
+                color: theme.text,
                 textAlign: "center",
                 width: "100%",
                 marginBottom: 4,
@@ -747,7 +747,7 @@ export default function App() {
               }}
             />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-              <span style={{ fontFamily: "monospace", fontSize: 16, color: "#94a3b8", letterSpacing: 2 }}>{uwp.toUpperCase()}</span>
+              <span style={{ fontFamily: "monospace", fontSize: 16, color: theme.textMuted, letterSpacing: 2 }}>{uwp.toUpperCase()}</span>
               <select
                 value={zoneInput}
                 onChange={e => setZoneInput(e.target.value)}
@@ -769,63 +769,63 @@ export default function App() {
           </div>
 
           {/* Planet details */}
-          <Section title={`${t("starport")} — ${t("class")} ${parsed.sp}`} color="#f59e0b">
-            <Row label={t("quality")} value={STARPORT[parsed.sp].name} />
-            <Row label={t("fuel")} value={STARPORT[parsed.sp].fuel} />
-            <Row label={t("berth")} value={STARPORT[parsed.sp].berth} />
-            <Row label={t("services")} value={STARPORT[parsed.sp].services} />
-            <Row label={t("possibleBases")} value={STARPORT[parsed.sp].bases} />
+          <Section title={`${t("starport")} — ${t("class")} ${parsed.sp}`} color="#f59e0b" theme={theme}>
+            <Row label={t("quality")} value={STARPORT[parsed.sp].name} theme={theme} />
+            <Row label={t("fuel")} value={STARPORT[parsed.sp].fuel} theme={theme} />
+            <Row label={t("berth")} value={STARPORT[parsed.sp].berth} theme={theme} />
+            <Row label={t("services")} value={STARPORT[parsed.sp].services} theme={theme} />
+            <Row label={t("possibleBases")} value={STARPORT[parsed.sp].bases} theme={theme} />
           </Section>
 
-          <Section title={`${t("size")} — ${parsed.sz} ${SIZE[parsed.sz] ? `(${SIZE[parsed.sz].d})` : ""}`} color="#3b82f6">
+          <Section title={`${t("size")} — ${parsed.sz} ${SIZE[parsed.sz] ? `(${SIZE[parsed.sz].d})` : ""}`} color="#3b82f6" theme={theme}>
             {SIZE[parsed.sz] && <>
-              <Row label={t("diameter")} value={SIZE[parsed.sz].d} />
-              <Row label={t("gravity")} value={`${SIZE[parsed.sz].g}g`} />
-              {SIZE[parsed.sz].ex && <Row label={t("example")} value={SIZE[parsed.sz].ex} />}
-              <Row label={t("description")} value={SIZE[parsed.sz].desc} />
-              {parsed.sz <= 6 && parsed.sz > 0 && <Row label={`⚠ ${t("gravityWarning")}`} value={t("lowGravity")} warn />}
-              {parsed.sz >= 10 && <Row label={`⚠ ${t("gravityWarning")}`} value={t("highGravity")} warn />}
+              <Row label={t("diameter")} value={SIZE[parsed.sz].d} theme={theme} />
+              <Row label={t("gravity")} value={`${SIZE[parsed.sz].g}g`} theme={theme} />
+              {SIZE[parsed.sz].ex && <Row label={t("example")} value={SIZE[parsed.sz].ex} theme={theme} />}
+              <Row label={t("description")} value={SIZE[parsed.sz].desc} theme={theme} />
+              {parsed.sz <= 6 && parsed.sz > 0 && <Row label={`⚠ ${t("gravityWarning")}`} value={t("lowGravity")} warn theme={theme} />}
+              {parsed.sz >= 10 && <Row label={`⚠ ${t("gravityWarning")}`} value={t("highGravity")} warn theme={theme} />}
             </>}
           </Section>
 
-          <Section title={`${t("atmosphere")} — ${parsed.at} (${ATMO[parsed.at]?.comp || t("unknown")})`} color="#10b981">
+          <Section title={`${t("atmosphere")} — ${parsed.at} (${ATMO[parsed.at]?.comp || t("unknown")})`} color="#10b981" theme={theme}>
             {ATMO[parsed.at] && <>
-              <Row label={t("composition")} value={ATMO[parsed.at].comp} />
-              <Row label={t("pressure")} value={ATMO[parsed.at].pres} />
-              <Row label={t("equipRequired")} value={ATMO[parsed.at].equip} warn={ATMO[parsed.at].equip !== t("none") && ATMO[parsed.at].equip !== "None" && ATMO[parsed.at].equip !== "Ninguno"} />
-              <Row label={t("description")} value={ATMO[parsed.at].desc} />
-              {parsed.at >= 11 && <Row label={`⚠ ${t("danger")}`} value={t("dangerousAtmo")} warn />}
+              <Row label={t("composition")} value={ATMO[parsed.at].comp} theme={theme} />
+              <Row label={t("pressure")} value={ATMO[parsed.at].pres} theme={theme} />
+              <Row label={t("equipRequired")} value={ATMO[parsed.at].equip} warn={ATMO[parsed.at].equip !== t("none") && ATMO[parsed.at].equip !== "None" && ATMO[parsed.at].equip !== "Ninguno"} theme={theme} />
+              <Row label={t("description")} value={ATMO[parsed.at].desc} theme={theme} />
+              {parsed.at >= 11 && <Row label={`⚠ ${t("danger")}`} value={t("dangerousAtmo")} warn theme={theme} />}
             </>}
           </Section>
 
-          <Section title={`${t("hydrographics")} — ${parsed.hy} (${parsed.hy * 10}%-${Math.min(parsed.hy * 10 + 9, 100)}%)`} color="#06b6d4">
-            <Row label={t("liquidCoverage")} value={HYDRO[parsed.hy] || `${parsed.hy * 10}%`} />
-            {parsed.at >= 10 && parsed.hy > 0 && <Row label={`⚠ ${t("note")}`} value={t("liquidNote")} warn />}
+          <Section title={`${t("hydrographics")} — ${parsed.hy} (${parsed.hy * 10}%-${Math.min(parsed.hy * 10 + 9, 100)}%)`} color="#06b6d4" theme={theme}>
+            <Row label={t("liquidCoverage")} value={HYDRO[parsed.hy] || `${parsed.hy * 10}%`} theme={theme} />
+            {parsed.at >= 10 && parsed.hy > 0 && <Row label={`⚠ ${t("note")}`} value={t("liquidNote")} warn theme={theme} />}
           </Section>
 
-          <Section title={`${t("population")} — ${parsed.po}`} color="#8b5cf6">
-            <Row label={t("inhabitants")} value={POP[parsed.po] || `${t("level")} ${parsed.po}`} />
-            {parsed.po === 0 && <Row label={`⚠ ${t("note")}`} value={t("uninhabitedNote")} warn />}
-            {parsed.po <= 3 && parsed.po > 0 && <Row label={`⚠ ${t("note")}`} value={t("smallColonyNote")} warn />}
+          <Section title={`${t("population")} — ${parsed.po}`} color="#8b5cf6" theme={theme}>
+            <Row label={t("inhabitants")} value={POP[parsed.po] || `${t("level")} ${parsed.po}`} theme={theme} />
+            {parsed.po === 0 && <Row label={`⚠ ${t("note")}`} value={t("uninhabitedNote")} warn theme={theme} />}
+            {parsed.po <= 3 && parsed.po > 0 && <Row label={`⚠ ${t("note")}`} value={t("smallColonyNote")} warn theme={theme} />}
           </Section>
 
-          <Section title={`${t("government")} — ${parsed.go} (${GOV[parsed.go]?.type || t("unknown")})`} color="#ec4899">
+          <Section title={`${t("government")} — ${parsed.go} (${GOV[parsed.go]?.type || t("unknown")})`} color="#ec4899" theme={theme}>
             {GOV[parsed.go] && <>
-              <Row label={t("type")} value={GOV[parsed.go].type} />
-              <Row label={t("description")} value={GOV[parsed.go].desc} />
-              <Row label={t("commonContraband")} value={GOV[parsed.go].contra} warn={GOV[parsed.go].contra !== t("none") && GOV[parsed.go].contra !== "None" && GOV[parsed.go].contra !== "Ninguno"} />
+              <Row label={t("type")} value={GOV[parsed.go].type} theme={theme} />
+              <Row label={t("description")} value={GOV[parsed.go].desc} theme={theme} />
+              <Row label={t("commonContraband")} value={GOV[parsed.go].contra} warn={GOV[parsed.go].contra !== t("none") && GOV[parsed.go].contra !== "None" && GOV[parsed.go].contra !== "Ninguno"} theme={theme} />
             </>}
           </Section>
 
-          <Section title={`${t("lawLevel")} — ${parsed.la}`} color="#f43f5e">
-            <Row label={t("bannedWeapons")} value={LAW_WEAPONS[Math.min(parsed.la, 9)] || LAW_WEAPONS[9]} warn={parsed.la >= 4} />
-            <Row label={t("bannedArmor")} value={LAW_ARMOR[Math.min(parsed.la, 9)] || LAW_ARMOR[9]} warn={parsed.la >= 8} />
-            {parsed.la === 0 && <Row label={t("note")} value={t("noRestrictions")} />}
-            {parsed.la >= 9 && <Row label={`⚠ ${t("martialLaw")}`} value={t("allWeaponsArmorBanned")} warn />}
+          <Section title={`${t("lawLevel")} — ${parsed.la}`} color="#f43f5e" theme={theme}>
+            <Row label={t("bannedWeapons")} value={LAW_WEAPONS[Math.min(parsed.la, 9)] || LAW_WEAPONS[9]} warn={parsed.la >= 4} theme={theme} />
+            <Row label={t("bannedArmor")} value={LAW_ARMOR[Math.min(parsed.la, 9)] || LAW_ARMOR[9]} warn={parsed.la >= 8} theme={theme} />
+            {parsed.la === 0 && <Row label={t("note")} value={t("noRestrictions")} theme={theme} />}
+            {parsed.la >= 9 && <Row label={`⚠ ${t("martialLaw")}`} value={t("allWeaponsArmorBanned")} warn theme={theme} />}
           </Section>
 
-          <Section title={`${t("techLevel")} — ${parsed.tl}`} color="#6366f1">
-            <Row label={t("tl")} value={`${parsed.tl}`} />
+          <Section title={`${t("techLevel")} — ${parsed.tl}`} color="#6366f1" theme={theme}>
+            <Row label={t("tl")} value={`${parsed.tl}`} theme={theme} />
             <Row label={t("equivalent")} value={
               parsed.tl <= 0 ? t("primitive") :
               parsed.tl <= 3 ? t("preindustrial") :
@@ -835,27 +835,27 @@ export default function App() {
               parsed.tl <= 11 ? t("earlyStellar") :
               parsed.tl <= 13 ? t("midStellar") :
               t("advancedStellar")
-            } />
-            {parsed.tl < 3 && <Row label={`⚠ ${t("communications")}`} value={t("noTelecom")} warn />}
-            {parsed.tl >= 4 && parsed.tl <= 6 && <Row label={t("communications")} value={t("radioPhone")} />}
-            {parsed.tl >= 9 && <Row label={t("communications")} value={t("fullNetwork")} />}
+            } theme={theme} />
+            {parsed.tl < 3 && <Row label={`⚠ ${t("communications")}`} value={t("noTelecom")} warn theme={theme} />}
+            {parsed.tl >= 4 && parsed.tl <= 6 && <Row label={t("communications")} value={t("radioPhone")} theme={theme} />}
+            {parsed.tl >= 9 && <Row label={t("communications")} value={t("fullNetwork")} theme={theme} />}
           </Section>
 
           {(zoneInput === "A" || zoneInput === "R") && (
-            <Section title={`${t("travelZone")} — ${getZoneName(zoneInput)}`} color={ZONE_COLORS[zoneInput]}>
-              <Row label={t("code")} value={zoneInput === "A" ? t("amberCaution") : t("redProhibited")} warn />
-              <Row label={t("meaning")} value={zoneInput === "A" ? t("amberMeaning") : t("redMeaning")} />
+            <Section title={`${t("travelZone")} — ${getZoneName(zoneInput)}`} color={ZONE_COLORS[zoneInput]} theme={theme}>
+              <Row label={t("code")} value={zoneInput === "A" ? t("amberCaution") : t("redProhibited")} warn theme={theme} />
+              <Row label={t("meaning")} value={zoneInput === "A" ? t("amberMeaning") : t("redMeaning")} theme={theme} />
             </Section>
           )}
 
-          <div style={{ background: "#1e293b", borderRadius: 12, padding: 16, textAlign: "center", marginTop: 8 }}>
-            <div style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>{t("worldLine")}</div>
+          <div style={{ background: theme.bgCard, borderRadius: 12, padding: 16, textAlign: "center", marginTop: 8 }}>
+            <div style={{ fontSize: 11, color: theme.textDimmed, textTransform: "uppercase", marginBottom: 6 }}>{t("worldLine")}</div>
             <code style={{ fontSize: 15, color: "#f59e0b", fontWeight: 700, letterSpacing: 1 }}>
               {name} {uwp.toUpperCase()} {zoneInput}
             </code>
           </div>
 
-          <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#475569" }}>
+          <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: theme.textDimmed }}>
             {t("disclaimer")}<br />
             {t("manualNote")}
           </div>
