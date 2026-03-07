@@ -1,0 +1,21 @@
+{
+  "name": "Traveller UWP Decoder",
+  "short_name": "UWP Decoder",
+  "description": "Decode Universal World Profile codes from Mongoose Traveller RPG",
+  "start_url": "/traveller-uwp-decoder/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/traveller-uwp-decoder/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/traveller-uwp-decoder/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

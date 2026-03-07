@@ -15,7 +15,8 @@
       "Bash(npm audit fix:*)",
       "Bash(npm version:*)",
       "Bash(xargs ls:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npx sharp-cli:*)"
     ]
   }
 }
