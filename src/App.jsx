@@ -138,7 +138,7 @@ const THEMES = {
 };
 
 export default function App() {
-  const { t, lang } = useTranslation();
+  const { t, lang, langMode, setLangMode } = useTranslation();
   const [uwp, setUwp] = useState("");
   const [name, setName] = useState("");
   const [zoneInput, setZoneInput] = useState("V");
@@ -677,6 +677,34 @@ export default function App() {
             </div>
             <div style={{ fontSize: 12, color: theme.textDimmed, marginTop: 12 }}>
               {t("themeDescription")}
+            </div>
+          </div>
+
+          <div style={{ background: theme.bgCard, borderRadius: 12, padding: 20, marginBottom: 16, border: `1px solid ${theme.border}` }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: theme.text, marginBottom: 12 }}>{t("language")}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {["auto", "es", "en"].map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setLangMode(mode)}
+                  style={{
+                    flex: 1,
+                    minWidth: 80,
+                    background: langMode === mode ? "#3b82f6" : theme.border,
+                    border: "none",
+                    borderRadius: 8,
+                    color: langMode === mode ? "#fff" : theme.text,
+                    padding: "12px 16px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}>
+                  {t(mode === "auto" ? "langAuto" : mode === "es" ? "langEs" : "langEn")}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: theme.textDimmed, marginTop: 12 }}>
+              {t("langDescription")}
             </div>
           </div>
 

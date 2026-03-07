@@ -162,6 +162,11 @@ const translations = {
     themeDark: "Oscuro",
     themeLight: "Claro",
     themeDescription: "El modo automático sigue la configuración de tu sistema",
+    language: "Idioma",
+    langAuto: "Automático",
+    langEs: "Español",
+    langEn: "English",
+    langDescription: "El modo automático detecta el idioma de tu navegador",
   },
 
   en: {
@@ -316,6 +321,11 @@ const translations = {
     themeDark: "Dark",
     themeLight: "Light",
     themeDescription: "Auto mode follows your system settings",
+    language: "Language",
+    langAuto: "Auto",
+    langEs: "Español",
+    langEn: "English",
+    langDescription: "Auto mode detects your browser language",
   },
 };
 
@@ -524,19 +534,30 @@ export function getLAW_ARMOR(lang) {
 
 // Translation hook
 export function useTranslation() {
-  const [lang, setLang] = useState(() => detectLanguage());
+  const [langMode, setLangMode] = useState(() => {
+    const saved = localStorage.getItem("traveller-lang");
+    return saved && ["auto", "es", "en"].includes(saved) ? saved : "auto";
+  });
+
+  const actualLang = langMode === "auto" ? detectLanguage() : langMode;
 
   useEffect(() => {
+    localStorage.setItem("traveller-lang", langMode);
+  }, [langMode]);
+
+  useEffect(() => {
+    if (langMode !== "auto") return;
     const handleLangChange = () => {
-      setLang(detectLanguage());
+      // Force re-render when system language changes
+      setLangMode(prev => prev);
     };
     window.addEventListener("languagechange", handleLangChange);
     return () => window.removeEventListener("languagechange", handleLangChange);
-  }, []);
+  }, [langMode]);
 
   const t = (key) => {
-    return translations[lang]?.[key] || translations.en[key] || key;
+    return translations[actualLang]?.[key] || translations.en[key] || key;
   };
 
-  return { t, lang };
+  return { t, lang: actualLang, langMode, setLangMode };
 }
