@@ -13,7 +13,9 @@
       "Bash(git rm:*)",
       "Bash(npm outdated:*)",
       "Bash(npm audit fix:*)",
-      "Bash(npm version:*)"
+      "Bash(npm version:*)",
+      "Bash(xargs ls:*)",
+      "Bash(wc:*)"
     ]
   }
 }

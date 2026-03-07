@@ -55,6 +55,11 @@ input.planet-name {
   font-size: var(--font-size-3xl) !important;
 }
 
+/* Placeholder opacity */
+input::placeholder {
+  opacity: 0.4;
+}
+
 /* Visually hidden but accessible to screen readers */
 .sr-only {
   position: absolute;
