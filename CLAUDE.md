@@ -16,10 +16,38 @@ Mongoose Traveller UWP Decoder - A web app for decoding Universal World Profile 
 
 ```
 src/
-├── App.jsx      # Main application component (all views, navbar, logic)
-├── i18n.js      # Translations (ES/EN) and game data (starports, sizes, etc.)
-├── index.css    # Global styles and responsive breakpoints
-└── main.jsx     # React entry point
+├── components/
+│   ├── icons/
+│   │   └── index.jsx      # SVG icon components (IconCamera, IconClock, etc.)
+│   ├── ui/
+│   │   ├── Button.jsx     # Reusable button with variants
+│   │   ├── Section.jsx    # Card section with colored border
+│   │   ├── Row.jsx        # Label-value row for data display
+│   │   └── Badge.jsx      # Colored badge/tag
+│   ├── Navbar.jsx         # Navigation bar (desktop + mobile, with a11y)
+│   ├── Footer.jsx         # Disclaimer footer
+│   └── ErrorBoundary.jsx  # Error boundary with fallback UI
+├── views/
+│   ├── DecoderView.jsx    # Home/scan page
+│   ├── PlanetView.jsx     # Planet detail view
+│   ├── RecentView.jsx     # Recent planets list
+│   └── SettingsView.jsx   # Settings page
+├── constants/
+│   ├── colors.js          # COLORS, SECTION_COLORS, THEMES
+│   ├── zones.js           # ZONES, ZONE_COLORS
+│   ├── gameRules.js       # SIZE_RULES, ATMO_RULES, LAW_RULES, etc.
+│   └── ocr.js             # OCR_SETTINGS, MAX_RECENT_PLANETS
+├── hooks/
+│   ├── useThemeMode.js    # Theme management with localStorage
+│   └── useRecentPlanets.js # CRUD for recent planets
+├── utils/
+│   ├── routing.js         # URL parsing and building
+│   ├── uwp.js             # UWP parsing and validation
+│   └── i18n-helpers.js    # isNoneValue, requiresWarning
+├── App.jsx                # Main orchestration (~320 lines)
+├── i18n.js                # Translations (ES/EN) and game data
+├── index.css              # Global styles and responsive breakpoints
+└── main.jsx               # React entry point
 ```
 
 ## Commands
@@ -61,6 +89,184 @@ A UWP code is 8 characters: `A123456-7`
 - **No emojis** in UI unless user requests
 - **Spanish comments** acceptable (bilingual project)
 - **Mobile-first responsive** with breakpoint at 640px for navbar, 480px for other elements
+
+## Reusable Components (IMPORTANT)
+
+**ALWAYS use these components instead of creating inline styles:**
+
+### Button (`components/ui/Button.jsx`)
+```jsx
+import { Button } from "../components/ui/Button";
+
+// Variants: primary, secondary, ghost, nav, nav-mobile, option, icon, danger
+// Sizes: sm, md, lg, xl
+<Button variant="primary" size="md" theme={theme} onClick={handler}>
+  Click me
+</Button>
+
+// Navigation button (active state)
+<Button variant="nav" active={isActive} theme={theme}>
+  <IconCamera /> Scan
+</Button>
+
+// Option/toggle button (settings)
+<Button variant="option" active={selected === "dark"} theme={theme}>
+  Dark
+</Button>
+
+// Icon-only button (with aria-label)
+<Button variant="icon" theme={theme} aria-label="Delete">
+  <IconTrash />
+</Button>
+```
+
+### Footer (`components/Footer.jsx`)
+```jsx
+import { Footer } from "../components/Footer";
+
+// All views MUST use this for the disclaimer
+<Footer theme={theme} t={t} />
+
+// With version number (only in Settings)
+<Footer theme={theme} t={t} showVersion />
+```
+
+### Section & Row (`components/ui/Section.jsx`, `Row.jsx`)
+```jsx
+import { Section } from "../components/ui/Section";
+import { Row } from "../components/ui/Row";
+import { SECTION_COLORS } from "../constants/colors";
+
+<Section title="Starport" color={SECTION_COLORS.starport} theme={theme}>
+  <Row label="Quality" value="Excellent" theme={theme} />
+  <Row label="Warning" value="Danger!" warn theme={theme} />
+</Section>
+```
+
+### Colors (`constants/colors.js`)
+```jsx
+import { COLORS, SECTION_COLORS, THEMES } from "../constants/colors";
+
+// NEVER hardcode colors like "#3b82f6" - use constants:
+COLORS.primary    // #3b82f6
+COLORS.secondary  // #8b5cf6
+COLORS.warning    // #f59e0b
+COLORS.danger     // #ef4444
+COLORS.success    // #10b981
+
+// Section colors for UWP data
+SECTION_COLORS.starport     // warning
+SECTION_COLORS.size         // primary
+SECTION_COLORS.atmosphere   // success
+SECTION_COLORS.population   // secondary
+```
+
+### Zones (`constants/zones.js`)
+```jsx
+import { ZONES, ZONE_COLORS, getZoneColor } from "../constants/zones";
+
+// NEVER use string literals "A", "R", "V" - use constants:
+ZONES.GREEN   // "V"
+ZONES.AMBER   // "A"
+ZONES.RED     // "R"
+
+// Get color for a zone
+const color = getZoneColor(planet.zone);
+```
+
+### Icons (`components/icons/index.jsx`)
+```jsx
+import { IconCamera, IconClock, IconTrash, IconSettings } from "../components/icons";
+
+// All icons have aria-hidden="true" and consistent sizing
+<IconCamera />  // 16x16, marginRight: 6
+```
+
+### Game Rules (`constants/gameRules.js`)
+```jsx
+import { SIZE_RULES, ATMO_RULES, POP_RULES, LAW_RULES, TECH_COMM, getTechLevelKey } from "../constants/gameRules";
+
+// NEVER hardcode game thresholds - use constants:
+SIZE_RULES.LOW_GRAVITY_MAX   // 6 (size 1-6 = low gravity)
+SIZE_RULES.HIGH_GRAVITY_MIN  // 10 (size 10+ = high gravity)
+ATMO_RULES.DANGEROUS_MIN     // 11 (atmosphere 11+ = dangerous)
+LAW_RULES.MARTIAL_LAW_MIN    // 9 (law 9+ = martial law)
+
+// Get tech level description key for translation
+const key = getTechLevelKey(parsed.tl);  // Returns "primitive", "industrial", etc.
+t(key)  // Translates the key
+```
+
+### i18n Helpers (`utils/i18n-helpers.js`)
+```jsx
+import { isNoneValue, requiresWarning } from "../utils/i18n-helpers";
+
+// NEVER compare against multiple language strings - use helpers:
+// BAD:  value !== "None" && value !== "Ninguno"
+// GOOD: requiresWarning(value, t)
+
+<Row warn={requiresWarning(ATMO[parsed.at].equip, t)} />
+```
+
+### OCR Constants (`constants/ocr.js`)
+```jsx
+import { MAX_RECENT_PLANETS, isCommonWord, OCR_SETTINGS } from "../constants/ocr";
+
+// NEVER hardcode these values:
+MAX_RECENT_PLANETS           // 20
+OCR_SETTINGS.NAME_SEARCH_LENGTH  // 150
+OCR_SETTINGS.NAME_SEARCH_LINES   // 4
+OCR_SETTINGS.NAME_MIN_LENGTH     // 2
+OCR_SETTINGS.NAME_MAX_LENGTH     // 35
+
+// Check if word should be filtered from OCR results
+if (isCommonWord(word)) { ... }
+```
+
+### Custom Hooks (`hooks/`)
+```jsx
+import { useThemeMode } from "../hooks/useThemeMode";
+import { useRecentPlanets } from "../hooks/useRecentPlanets";
+
+// Theme management - persists to localStorage
+const { themeMode, setThemeMode, theme } = useThemeMode();
+// themeMode: "auto" | "light" | "dark"
+// theme: { bg, text, textMuted, textDimmed, bgCard, bgHeader, border }
+
+// Recent planets CRUD - persists to localStorage
+const {
+  recentPlanets,      // Array of { uwp, name, zone, timestamp }
+  dataLoaded,         // Boolean - true when localStorage is loaded
+  savePlanet,         // (uwp, name, zone) => void
+  loadPlanet,         // (planet) => void - updates lastAccessed
+  deletePlanet,       // (uwp) => void
+  clearAllPlanets,    // () => void
+  findPlanet,         // (uwp) => planet | undefined
+} = useRecentPlanets();
+```
+
+### Error Boundary (`components/ErrorBoundary.jsx`)
+```jsx
+// Wraps App in main.jsx - catches React errors
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
+<ErrorBoundary>
+  <App />
+</ErrorBoundary>
+```
+
+## Anti-patterns to Avoid
+
+1. **NO inline button styles** - Use `<Button>` component
+2. **NO repeated footer/disclaimer** - Use `<Footer>` component
+3. **NO hardcoded colors** - Use `COLORS.*` constants
+4. **NO zone string literals** - Use `ZONES.*` constants
+5. **NO duplicate Navbar props** - Pass via `commonProps` spread in App.jsx
+6. **NO hardcoded game thresholds** - Use `SIZE_RULES`, `LAW_RULES`, etc.
+7. **NO multi-language string comparisons** - Use `requiresWarning(value, t)`
+8. **NO hardcoded OCR settings** - Use `OCR_SETTINGS.*` and `MAX_RECENT_PLANETS`
+9. **NO duplicating theme/localStorage logic** - Use `useThemeMode` and `useRecentPlanets` hooks
+10. **NO missing ErrorBoundary** - App must be wrapped in ErrorBoundary in main.jsx
 
 ## Required Checks
 

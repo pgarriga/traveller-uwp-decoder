@@ -1,0 +1,88 @@
+import { Navbar } from "../components/Navbar";
+import { Footer } from "../components/Footer";
+import { Button } from "../components/ui/Button";
+import { IconTrash } from "../components/icons";
+import { getZoneColor } from "../constants/zones";
+
+export const RecentView = ({
+  theme,
+  recentPlanets,
+  loadPlanet,
+  deletePlanet,
+  clearAllPlanets,
+  view,
+  resetDecoder,
+  navigateTo,
+  menuOpen,
+  setMenuOpen,
+  t
+}) => (
+  <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+    <Navbar
+      theme={theme}
+      view={view}
+      resetDecoder={resetDecoder}
+      navigateTo={navigateTo}
+      menuOpen={menuOpen}
+      setMenuOpen={setMenuOpen}
+      t={t}
+    />
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: theme.text }}>
+            {t("recentPlanets")}
+          </h1>
+          {recentPlanets.length > 0 && (
+            <Button variant="ghost" size="sm" theme={theme} onClick={clearAllPlanets}>
+              {t("clearAll")}
+            </Button>
+          )}
+        </div>
+        <div style={{ color: theme.textDimmed, fontSize: 13 }}>
+          {recentPlanets.length} {t("planetCount")}
+        </div>
+      </div>
+
+      {recentPlanets.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 60, color: theme.textDimmed }}>
+          {t("noRecentPlanets")}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {recentPlanets.map((planet) => (
+            <div
+              key={planet.uwp}
+              onClick={() => loadPlanet(planet)}
+              style={{
+                background: theme.bgCard,
+                borderRadius: 10,
+                padding: "12px 14px",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                cursor: "pointer",
+                border: `1px solid ${theme.border}`,
+                borderLeft: `3px solid ${getZoneColor(planet.zone)}`
+              }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: theme.text, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{planet.name}</div>
+                <div style={{ fontFamily: "monospace", fontSize: 12, color: theme.textDimmed, letterSpacing: 0.5 }}>{planet.uwp}</div>
+              </div>
+              <Button
+                variant="icon"
+                theme={theme}
+                onClick={(e) => { e.stopPropagation(); deletePlanet(planet.uwp); }}
+                aria-label={t("delete") || "Delete"}
+              >
+                <IconTrash />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Footer theme={theme} t={t} />
+    </div>
+  </div>
+);
