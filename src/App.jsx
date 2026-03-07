@@ -80,8 +80,8 @@ const Badge = ({ text, color = "#3b82f6" }) => (
 
 // URL routing helpers
 const getBasePath = () => {
-  // Support GitHub Pages subdirectory
-  const base = document.querySelector("base")?.getAttribute("href") || "/";
+  // Support GitHub Pages subdirectory - Vite provides BASE_URL
+  const base = import.meta.env.BASE_URL || "/";
   return base.endsWith("/") ? base.slice(0, -1) : base;
 };
 
