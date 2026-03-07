@@ -716,6 +716,10 @@ export default function App() {
             {t("disclaimer")}<br />
             {t("manualNote")}
           </div>
+
+          <div style={{ textAlign: "center", marginTop: 16, fontSize: 11, color: theme.textDimmed }}>
+            v{__APP_VERSION__}
+          </div>
         </div>
       </div>
     );

@@ -126,8 +126,8 @@ const translations = {
 
     // Footer
     worldLine: "Línea completa del mundo",
-    disclaimer: "Herramienta no oficial con el fin de agilizar el juego",
-    manualNote: "Para detalles completos revisar el manual",
+    disclaimer: "Herramienta no oficial diseñada para agilizar el juego.",
+    manualNote: "Para información detallada, consulta el manual oficial.",
 
     // None/varies
     none: "Ninguno",
@@ -285,8 +285,8 @@ const translations = {
 
     // Footer
     worldLine: "Complete world line",
-    disclaimer: "Unofficial tool to speed up gameplay",
-    manualNote: "For complete details check the manual",
+    disclaimer: "Unofficial tool designed to speed up gameplay.",
+    manualNote: "For detailed information, check the official manual.",
 
     // None/varies
     none: "None",
