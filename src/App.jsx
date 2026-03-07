@@ -306,13 +306,17 @@ export default function App() {
           style={{
             fontSize: 18,
             fontWeight: 800,
+            cursor: "pointer",
+            display: "flex",
+            gap: 6
+          }}>
+          <span style={{ color: "#f59e0b" }}>Traveller</span>
+          <span style={{
             background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            cursor: "pointer"
-          }}>
-          UWP Decoder
+            backgroundClip: "text"
+          }}>UWP Decoder</span>
         </div>
 
         {/* Desktop nav links */}
@@ -616,16 +620,16 @@ export default function App() {
   useEffect(() => {
     if (view === "planet" && parsed && uwp.trim()) {
       const normalizedUwp = uwp.toUpperCase();
-      const planet = {
-        name: name.trim() || normalizedUwp,
-        uwp: normalizedUwp,
-        zone: zoneInput,
-        timestamp: Date.now()
-      };
+      const newName = name.trim() || normalizedUwp;
 
       setRecentPlanets(prev => {
-        const filtered = prev.filter(p => p.uwp !== planet.uwp);
-        return [planet, ...filtered].slice(0, 20);
+        const existing = prev.find(p => p.uwp === normalizedUwp);
+        // Skip update if nothing changed
+        if (existing && existing.name === newName && existing.zone === zoneInput) {
+          return prev;
+        }
+        const filtered = prev.filter(p => p.uwp !== normalizedUwp);
+        return [{ name: newName, uwp: normalizedUwp, zone: zoneInput, timestamp: Date.now() }, ...filtered].slice(0, 20);
       });
     }
   }, [view, uwp, parsed, name, zoneInput]);
