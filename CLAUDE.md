@@ -64,12 +64,16 @@ A UWP code is 8 characters: `A123456-7`
 
 ## Required Checks
 
-**IMPORTANT**: After making UI changes, ALWAYS run these skills before committing:
+**IMPORTANT**: Run these skills when appropriate before committing:
 
+### After UI changes:
 - `/check-responsive` - Verify responsive design works on all screen sizes
 - `/check-a11y` - Verify accessibility compliance
 
-These checks ensure the app works well on mobile devices and is accessible to all users.
+### After updating dependencies:
+- `/update-badges` - Sync README.md badges with package.json versions
+
+These checks ensure the app works well on mobile devices, is accessible to all users, and documentation stays current.
 
 ## Important Notes
 
