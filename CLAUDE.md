@@ -70,8 +70,8 @@ A UWP code is 8 characters: `A123456-7`
 - `/check-responsive` - Verify responsive design works on all screen sizes
 - `/check-a11y` - Verify accessibility compliance
 
-### After updating dependencies:
-- `/update-badges` - Sync README.md badges with package.json versions
+### After updating dependencies or bumping version:
+- `/update-badges` - Sync README.md badges with package.json versions (including project version)
 
 These checks ensure the app works well on mobile devices, is accessible to all users, and documentation stays current.
 
