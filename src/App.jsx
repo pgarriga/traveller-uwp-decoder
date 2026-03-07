@@ -53,6 +53,13 @@ const IconClose = () => (
   </svg>
 );
 
+const IconSettings = () => (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: "middle", marginRight: 6 }}>
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+);
+
 const Section = ({ title, children, color = "#3b82f6" }) => (
   <div style={{ background: "#1e293b", borderRadius: 12, padding: "16px 20px", marginBottom: 12, borderLeft: `4px solid ${color}` }}>
     <div className="section-title" style={{ color, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{title}</div>
@@ -88,6 +95,9 @@ const parseUrl = () => {
   if (path === "/recent") {
     return { view: "saved", uwp: null };
   }
+  if (path === "/settings") {
+    return { view: "settings", uwp: null };
+  }
   const planetMatch = path.match(/^\/planet\/([A-Za-z0-9-]+)$/);
   if (planetMatch) {
     return { view: "planet", uwp: planetMatch[1].toUpperCase() };
@@ -98,8 +108,33 @@ const parseUrl = () => {
 const buildUrl = (view, uwp = null) => {
   const basePath = getBasePath();
   if (view === "saved") return `${basePath}/recent`;
+  if (view === "settings") return `${basePath}/settings`;
   if (view === "planet" && uwp) return `${basePath}/planet/${uwp.toUpperCase()}`;
   return basePath || "/";
+};
+
+// Theme colors
+const THEMES = {
+  dark: {
+    bg: "#0f172a",
+    bgCard: "#1e293b",
+    bgHeader: "linear-gradient(135deg, #1e3a5f, #1e293b)",
+    text: "#e2e8f0",
+    textMuted: "#94a3b8",
+    textDimmed: "#64748b",
+    border: "#334155",
+    navBg: "#1e293b",
+  },
+  light: {
+    bg: "#f1f5f9",
+    bgCard: "#ffffff",
+    bgHeader: "linear-gradient(135deg, #e0f2fe, #f0f9ff)",
+    text: "#1e293b",
+    textMuted: "#475569",
+    textDimmed: "#64748b",
+    border: "#cbd5e1",
+    navBg: "#ffffff",
+  }
 };
 
 export default function App() {
@@ -110,11 +145,17 @@ export default function App() {
   const [recentPlanets, setRecentPlanets] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [view, setView] = useState("decoder"); // "decoder" | "saved" | "planet"
+  const [view, setView] = useState("decoder"); // "decoder" | "saved" | "planet" | "settings"
   const [scanning, setScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
+  const [themeMode, setThemeMode] = useState("auto"); // "auto" | "dark" | "light"
   const fileInputRef = useRef(null);
   const isInitialLoad = useRef(true);
+
+  // Compute actual theme based on mode and system preference
+  const getSystemTheme = () => window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const actualTheme = themeMode === "auto" ? getSystemTheme() : themeMode;
+  const theme = THEMES[actualTheme];
 
   // Get translated game data
   const STARPORT = useMemo(() => getSTARPORT(t)[lang], [lang, t]);
@@ -136,6 +177,11 @@ export default function App() {
       console.error("Failed to load recent planets:", e);
       localStorage.removeItem("traveller-recent");
     }
+    // Load theme preference
+    const savedTheme = localStorage.getItem("traveller-theme");
+    if (savedTheme && ["auto", "dark", "light"].includes(savedTheme)) {
+      setThemeMode(savedTheme);
+    }
     setDataLoaded(true);
   }, []);
 
@@ -145,6 +191,20 @@ export default function App() {
       localStorage.setItem("traveller-recent", JSON.stringify(recentPlanets));
     }
   }, [recentPlanets, dataLoaded]);
+
+  // Sync theme to localStorage
+  useEffect(() => {
+    localStorage.setItem("traveller-theme", themeMode);
+  }, [themeMode]);
+
+  // Listen for system theme changes when in auto mode
+  useEffect(() => {
+    if (themeMode !== "auto") return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => setThemeMode(prev => prev); // Force re-render
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, [themeMode]);
 
   // Parse URL on initial load and load planet if needed
   useEffect(() => {
@@ -192,6 +252,8 @@ export default function App() {
         setView("planet");
       } else if (urlView === "saved") {
         setView("saved");
+      } else if (urlView === "settings") {
+        setView("settings");
       } else {
         setName("");
         setUwp("");
@@ -230,8 +292,8 @@ export default function App() {
         left: 0,
         right: 0,
         height: 56,
-        background: "#1e293b",
-        borderBottom: "1px solid #334155",
+        background: theme.navBg,
+        borderBottom: `1px solid ${theme.border}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -258,10 +320,10 @@ export default function App() {
           <button
             onClick={resetDecoder}
             style={{
-              background: view === "decoder" ? "#334155" : "transparent",
+              background: view === "decoder" ? theme.border : "transparent",
               border: "none",
               borderRadius: 8,
-              color: view === "decoder" ? "#e2e8f0" : "#94a3b8",
+              color: view === "decoder" ? theme.text : theme.textMuted,
               padding: "8px 16px",
               fontSize: 14,
               fontWeight: 600,
@@ -274,10 +336,10 @@ export default function App() {
           <button
             onClick={() => navigateTo("saved")}
             style={{
-              background: view === "saved" ? "#334155" : "transparent",
+              background: view === "saved" ? theme.border : "transparent",
               border: "none",
               borderRadius: 8,
-              color: view === "saved" ? "#e2e8f0" : "#94a3b8",
+              color: view === "saved" ? theme.text : theme.textMuted,
               padding: "8px 16px",
               fontSize: 14,
               fontWeight: 600,
@@ -286,6 +348,22 @@ export default function App() {
               alignItems: "center"
             }}>
             <IconClock />{t("viewRecent")}
+          </button>
+          <button
+            onClick={() => navigateTo("settings")}
+            style={{
+              background: view === "settings" ? theme.border : "transparent",
+              border: "none",
+              borderRadius: 8,
+              color: view === "settings" ? theme.text : theme.textMuted,
+              padding: "8px 16px",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}>
+            <IconSettings />{t("settings")}
           </button>
         </div>
 
@@ -297,7 +375,7 @@ export default function App() {
             display: "none",
             background: "transparent",
             border: "none",
-            color: "#e2e8f0",
+            color: theme.text,
             padding: 8,
             cursor: "pointer"
           }}>
@@ -315,7 +393,7 @@ export default function App() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: "#0f172aee",
+            background: theme.bg + "ee",
             zIndex: 999,
             padding: 16,
             display: "flex",
@@ -325,10 +403,10 @@ export default function App() {
           <button
             onClick={resetDecoder}
             style={{
-              background: view === "decoder" ? "#334155" : "#1e293b",
+              background: view === "decoder" ? theme.border : theme.bgCard,
               border: "none",
               borderRadius: 8,
-              color: "#e2e8f0",
+              color: theme.text,
               padding: "16px",
               fontSize: 16,
               fontWeight: 600,
@@ -341,10 +419,10 @@ export default function App() {
           <button
             onClick={() => navigateTo("saved")}
             style={{
-              background: view === "saved" ? "#334155" : "#1e293b",
+              background: view === "saved" ? theme.border : theme.bgCard,
               border: "none",
               borderRadius: 8,
-              color: "#e2e8f0",
+              color: theme.text,
               padding: "16px",
               fontSize: 16,
               fontWeight: 600,
@@ -353,6 +431,22 @@ export default function App() {
               alignItems: "center"
             }}>
             <IconClock />{t("viewRecent")}
+          </button>
+          <button
+            onClick={() => navigateTo("settings")}
+            style={{
+              background: view === "settings" ? theme.border : theme.bgCard,
+              border: "none",
+              borderRadius: 8,
+              color: theme.text,
+              padding: "16px",
+              fontSize: 16,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center"
+            }}>
+            <IconSettings />{t("settings")}
           </button>
         </div>
       )}
@@ -550,17 +644,62 @@ export default function App() {
     }
   }, [view, parsed]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Settings View
+  if (view === "settings") {
+    return (
+      <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+        <Navbar />
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
+          <h1 style={{ margin: "0 0 24px", fontSize: 24, fontWeight: 800 }}>{t("settings")}</h1>
+
+          <div style={{ background: theme.bgCard, borderRadius: 12, padding: 20, marginBottom: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: theme.text, marginBottom: 12 }}>{t("theme")}</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {["auto", "light", "dark"].map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setThemeMode(mode)}
+                  style={{
+                    flex: 1,
+                    minWidth: 80,
+                    background: themeMode === mode ? "#3b82f6" : theme.border,
+                    border: "none",
+                    borderRadius: 8,
+                    color: themeMode === mode ? "#fff" : theme.text,
+                    padding: "12px 16px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}>
+                  {t(mode === "auto" ? "themeAuto" : mode === "light" ? "themeLight" : "themeDark")}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: theme.textDimmed, marginTop: 12 }}>
+              {t("themeDescription")}
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: theme.textDimmed }}>
+            {t("disclaimer")}<br />
+            {t("manualNote")}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Planet Detail View
   if (view === "planet") {
     if (!parsed) {
       return null; // Will redirect via useEffect
     }
     return (
-      <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
         <Navbar />
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
           {/* Planet header */}
-          <div style={{ background: "linear-gradient(135deg, #1e3a5f, #1e293b)", borderRadius: 12, padding: 20, marginBottom: 16, textAlign: "center" }}>
+          <div style={{ background: theme.bgHeader, borderRadius: 12, padding: 20, marginBottom: 16, textAlign: "center" }}>
             <input
               className="planet-name"
               value={name}
@@ -700,12 +839,12 @@ export default function App() {
   // Recent Planets View
   if (view === "saved") {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
         <Navbar />
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#e2e8f0" }}>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: theme.text }}>
                 {t("recentPlanets")}
               </h1>
               {recentPlanets.length > 0 && (
@@ -714,7 +853,7 @@ export default function App() {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "#64748b",
+                    color: theme.textDimmed,
                     fontSize: 13,
                     cursor: "pointer",
                     padding: "4px 8px"
@@ -723,13 +862,13 @@ export default function App() {
                 </button>
               )}
             </div>
-            <div style={{ color: "#64748b", fontSize: 13 }}>
+            <div style={{ color: theme.textDimmed, fontSize: 13 }}>
               {recentPlanets.length} {t("planetCount")}
             </div>
           </div>
 
           {recentPlanets.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#64748b" }}>
+            <div style={{ textAlign: "center", padding: 60, color: theme.textDimmed }}>
               {t("noRecentPlanets")}
             </div>
           ) : (
@@ -739,25 +878,26 @@ export default function App() {
                   key={planet.uwp}
                   onClick={() => loadPlanet(planet)}
                   style={{
-                    background: "#1e293b",
+                    background: theme.bgCard,
                     borderRadius: 10,
                     padding: "12px 14px",
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
                     cursor: "pointer",
+                    border: `1px solid ${theme.border}`,
                     borderLeft: `3px solid ${planet.zone === "R" ? "#ef4444" : planet.zone === "A" ? "#f59e0b" : "#10b981"}`
                   }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{planet.name}</div>
-                    <div style={{ fontFamily: "monospace", fontSize: 12, color: "#64748b", letterSpacing: 0.5 }}>{planet.uwp}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: theme.text, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{planet.name}</div>
+                    <div style={{ fontFamily: "monospace", fontSize: 12, color: theme.textDimmed, letterSpacing: 0.5 }}>{planet.uwp}</div>
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); deletePlanet(planet.uwp); }}
                     style={{
                       background: "transparent",
                       border: "none",
-                      color: "#64748b",
+                      color: theme.textDimmed,
                       padding: 8,
                       cursor: "pointer",
                       borderRadius: 6,
@@ -771,7 +911,7 @@ export default function App() {
             </div>
           )}
 
-          <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#475569" }}>
+          <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: theme.textDimmed }}>
             {t("disclaimer")}<br />
             {t("manualNote")}
           </div>
@@ -782,7 +922,7 @@ export default function App() {
 
   // Scan View (simplified)
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a", color: "#e2e8f0", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
       <Navbar />
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
         <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -793,7 +933,7 @@ export default function App() {
         </div>
 
         {/* Main scan button */}
-        <div style={{ background: "#1e293b", borderRadius: 12, padding: 24, marginBottom: 16 }}>
+        <div style={{ background: theme.bgCard, borderRadius: 12, padding: 24, marginBottom: 16, border: `1px solid ${theme.border}` }}>
           <input
             type="file"
             accept="image/*"
@@ -807,7 +947,7 @@ export default function App() {
             disabled={scanning}
             style={{
               width: "100%",
-              background: scanning ? "#334155" : "#8b5cf6",
+              background: scanning ? theme.border : "#8b5cf6",
               border: "none",
               borderRadius: 12,
               color: "#fff",
@@ -831,14 +971,14 @@ export default function App() {
 
           {/* Separator */}
           <div style={{ display: "flex", alignItems: "center", margin: "20px 0", gap: 12 }}>
-            <div style={{ flex: 1, height: 1, background: "#334155" }} />
-            <span style={{ color: "#64748b", fontSize: 12 }}>{t("or")}</span>
-            <div style={{ flex: 1, height: 1, background: "#334155" }} />
+            <div style={{ flex: 1, height: 1, background: theme.border }} />
+            <span style={{ color: theme.textDimmed, fontSize: 12 }}>{t("or")}</span>
+            <div style={{ flex: 1, height: 1, background: theme.border }} />
           </div>
 
           {/* Manual input (secondary) */}
           <div style={{ textAlign: "center", marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: "#64748b" }}>{t("enterManually")}</span>
+            <span style={{ fontSize: 12, color: theme.textDimmed }}>{t("enterManually")}</span>
           </div>
           <div className="manual-input-row">
             <input
@@ -848,11 +988,11 @@ export default function App() {
               placeholder={t("uwpPlaceholder")}
               style={{
                 flex: 1,
-                background: "#0f172a",
-                border: "1px solid #334155",
+                background: theme.bg,
+                border: `1px solid ${theme.border}`,
                 borderRadius: 8,
                 padding: "10px 14px",
-                color: "#e2e8f0",
+                color: theme.text,
                 fontSize: 14,
                 fontFamily: "monospace",
                 fontWeight: 600,
@@ -864,10 +1004,10 @@ export default function App() {
               onClick={() => navigateTo("planet", uwp)}
               disabled={!parsed}
               style={{
-                background: parsed ? "#3b82f6" : "#334155",
+                background: parsed ? "#3b82f6" : theme.border,
                 border: "none",
                 borderRadius: 8,
-                color: parsed ? "#fff" : "#64748b",
+                color: parsed ? "#fff" : theme.textDimmed,
                 padding: "10px 20px",
                 fontSize: 14,
                 fontWeight: 600,
@@ -883,7 +1023,7 @@ export default function App() {
           )}
         </div>
 
-        <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#475569" }}>
+        <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: theme.textDimmed }}>
           {t("disclaimer")}<br />
           {t("manualNote")}
         </div>

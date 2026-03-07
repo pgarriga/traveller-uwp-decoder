@@ -154,6 +154,14 @@ const translations = {
     planetCount: "planetas",
     edit: "Editar",
     newPlanet: "Nuevo planeta",
+
+    // Settings
+    settings: "Ajustes",
+    theme: "Tema",
+    themeAuto: "Automático",
+    themeDark: "Oscuro",
+    themeLight: "Claro",
+    themeDescription: "El modo automático sigue la configuración de tu sistema",
   },
 
   en: {
@@ -300,6 +308,14 @@ const translations = {
     planetCount: "planets",
     edit: "Edit",
     newPlanet: "New planet",
+
+    // Settings
+    settings: "Settings",
+    theme: "Theme",
+    themeAuto: "Auto",
+    themeDark: "Dark",
+    themeLight: "Light",
+    themeDescription: "Auto mode follows your system settings",
   },
 };
 
