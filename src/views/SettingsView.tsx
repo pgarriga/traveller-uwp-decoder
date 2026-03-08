@@ -1,8 +1,27 @@
+import type { FC } from "react";
+import type { Theme, ThemeMode } from "../types/theme";
+import type { TranslationFunction, LangMode } from "../types/i18n";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { Button } from "../components/ui/Button";
 
-export const SettingsView = ({
+type ViewType = "decoder" | "saved" | "settings" | "planet";
+
+interface SettingsViewProps {
+  theme: Theme;
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
+  langMode: LangMode;
+  setLangMode: (mode: LangMode) => void;
+  view: ViewType;
+  resetDecoder: () => void;
+  navigateTo: (view: ViewType) => void;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  t: TranslationFunction;
+}
+
+export const SettingsView: FC<SettingsViewProps> = ({
   theme,
   themeMode,
   setThemeMode,
@@ -31,7 +50,7 @@ export const SettingsView = ({
       <div style={{ background: theme.bgCard, borderRadius: 12, padding: 20, marginBottom: 16, border: `1px solid ${theme.border}` }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: theme.text, marginBottom: 12 }}>{t("theme")}</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {["auto", "light", "dark"].map(mode => (
+          {(["auto", "light", "dark"] as ThemeMode[]).map(mode => (
             <Button
               key={mode}
               variant="option"
@@ -52,7 +71,7 @@ export const SettingsView = ({
       <div style={{ background: theme.bgCard, borderRadius: 12, padding: 20, marginBottom: 16, border: `1px solid ${theme.border}` }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: theme.text, marginBottom: 12 }}>{t("language")}</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {["auto", "es", "en"].map(mode => (
+          {(["auto", "es", "en"] as LangMode[]).map(mode => (
             <Button
               key={mode}
               variant="option"

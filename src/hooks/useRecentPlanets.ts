@@ -1,11 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
+import type { RecentPlanet, ZoneCode } from "../types/uwp";
 import { MAX_RECENT_PLANETS } from "../constants/ocr";
 import { ZONES } from "../constants/zones";
 
 const STORAGE_KEY = "traveller-recent";
 
-export const useRecentPlanets = () => {
-  const [recentPlanets, setRecentPlanets] = useState([]);
+interface UseRecentPlanetsReturn {
+  recentPlanets: RecentPlanet[];
+  dataLoaded: boolean;
+  savePlanet: (uwp: string, name: string, zone?: ZoneCode) => void;
+  loadPlanet: (planet: RecentPlanet) => RecentPlanet;
+  deletePlanet: (planetUwp: string) => void;
+  clearAllPlanets: () => void;
+  findPlanet: (uwp: string) => RecentPlanet | undefined;
+}
+
+export const useRecentPlanets = (): UseRecentPlanetsReturn => {
+  const [recentPlanets, setRecentPlanets] = useState<RecentPlanet[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -34,7 +45,7 @@ export const useRecentPlanets = () => {
   }, [recentPlanets, dataLoaded]);
 
   // Save or update a planet
-  const savePlanet = useCallback((uwp, name, zone = ZONES.GREEN) => {
+  const savePlanet = useCallback((uwp: string, name: string, zone: ZoneCode = ZONES.GREEN as ZoneCode) => {
     const normalizedUwp = uwp.toUpperCase();
     const planetName = name.trim() || normalizedUwp;
 
@@ -53,7 +64,7 @@ export const useRecentPlanets = () => {
   }, []);
 
   // Load a planet (moves to top of list)
-  const loadPlanet = useCallback((planet) => {
+  const loadPlanet = useCallback((planet: RecentPlanet): RecentPlanet => {
     const updatedPlanet = { ...planet, timestamp: Date.now() };
     setRecentPlanets(prev => {
       const filtered = prev.filter(p => p.uwp !== planet.uwp);
@@ -63,7 +74,7 @@ export const useRecentPlanets = () => {
   }, []);
 
   // Delete a planet
-  const deletePlanet = useCallback((planetUwp) => {
+  const deletePlanet = useCallback((planetUwp: string) => {
     setRecentPlanets(prev => prev.filter(p => p.uwp !== planetUwp));
   }, []);
 
@@ -73,7 +84,7 @@ export const useRecentPlanets = () => {
   }, []);
 
   // Find a planet by UWP
-  const findPlanet = useCallback((uwp) => {
+  const findPlanet = useCallback((uwp: string): RecentPlanet | undefined => {
     return recentPlanets.find(p => p.uwp.toUpperCase() === uwp.toUpperCase());
   }, [recentPlanets]);
 

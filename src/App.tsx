@@ -1,4 +1,7 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, ChangeEvent } from "react";
+import type { ZoneCode, StarportClass } from "./types/uwp";
+import type { Language } from "./types/i18n";
+import type { StarportData, SizeData, AtmosphereData, GovernmentData } from "./types/game-data";
 import { useTranslation, getSTARPORT, getSIZE, getATMO, getHYDRO, getPOP, getGOV, getLAW_WEAPONS, getLAW_ARMOR } from "./i18n";
 
 // Hooks
@@ -22,6 +25,15 @@ import { DecoderView } from "./views/DecoderView";
 // OCR
 import { createWorker } from "tesseract.js";
 
+type ViewType = "decoder" | "saved" | "settings" | "planet";
+
+interface RecentPlanet {
+  uwp: string;
+  name: string;
+  zone: ZoneCode;
+  timestamp: number;
+}
+
 export default function App() {
   const { t, lang, langMode, setLangMode } = useTranslation();
   const { themeMode, setThemeMode, theme } = useThemeMode();
@@ -37,23 +49,26 @@ export default function App() {
 
   const [uwp, setUwp] = useState("");
   const [name, setName] = useState("");
-  const [zoneInput, setZoneInput] = useState(ZONES.GREEN);
+  const [zoneInput, setZoneInput] = useState<ZoneCode>(ZONES.GREEN as ZoneCode);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [view, setView] = useState("decoder");
+  const [view, setView] = useState<ViewType>("decoder");
   const [scanning, setScanning] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isInitialLoad = useRef(true);
 
   // Get translated game data
-  const STARPORT = useMemo(() => getSTARPORT(t)[lang], [lang, t]);
-  const SIZE = useMemo(() => getSIZE(lang), [lang]);
-  const ATMO = useMemo(() => getATMO(lang), [lang]);
-  const HYDRO = useMemo(() => getHYDRO(lang), [lang]);
-  const POP = useMemo(() => getPOP(lang), [lang]);
-  const GOV = useMemo(() => getGOV(lang), [lang]);
-  const LAW_WEAPONS = useMemo(() => getLAW_WEAPONS(lang), [lang]);
-  const LAW_ARMOR = useMemo(() => getLAW_ARMOR(lang), [lang]);
+  const STARPORT: Record<StarportClass, StarportData> = useMemo(
+    () => getSTARPORT(t)[lang],
+    [lang, t]
+  );
+  const SIZE: SizeData[] = useMemo(() => getSIZE(lang), [lang]);
+  const ATMO: AtmosphereData[] = useMemo(() => getATMO(lang), [lang]);
+  const HYDRO: string[] = useMemo(() => getHYDRO(lang), [lang]);
+  const POP: string[] = useMemo(() => getPOP(lang), [lang]);
+  const GOV: GovernmentData[] = useMemo(() => getGOV(lang), [lang]);
+  const LAW_WEAPONS: string[] = useMemo(() => getLAW_WEAPONS(lang), [lang]);
+  const LAW_ARMOR: string[] = useMemo(() => getLAW_ARMOR(lang), [lang]);
 
   // Parse URL on initial load
   useEffect(() => {
@@ -66,16 +81,16 @@ export default function App() {
       if (planet) {
         setName(planet.name);
         setUwp(planet.uwp);
-        setZoneInput(planet.zone || ZONES.GREEN);
+        setZoneInput(planet.zone || (ZONES.GREEN as ZoneCode));
         setView("planet");
       } else {
         setUwp(urlUwp);
         setName("");
-        setZoneInput(ZONES.GREEN);
+        setZoneInput(ZONES.GREEN as ZoneCode);
         setView("planet");
       }
     } else {
-      setView(urlView);
+      setView(urlView as ViewType);
     }
     isInitialLoad.current = false;
   }, [dataLoaded, findPlanet]);
@@ -90,11 +105,11 @@ export default function App() {
         if (planet) {
           setName(planet.name);
           setUwp(planet.uwp);
-          setZoneInput(planet.zone || ZONES.GREEN);
+          setZoneInput(planet.zone || (ZONES.GREEN as ZoneCode));
         } else {
           setUwp(urlUwp);
           setName("");
-          setZoneInput(ZONES.GREEN);
+          setZoneInput(ZONES.GREEN as ZoneCode);
         }
         setView("planet");
       } else if (urlView === "saved") {
@@ -104,7 +119,7 @@ export default function App() {
       } else {
         setName("");
         setUwp("");
-        setZoneInput(ZONES.GREEN);
+        setZoneInput(ZONES.GREEN as ZoneCode);
         setScanStatus("");
         setView("decoder");
       }
@@ -115,8 +130,8 @@ export default function App() {
   }, [findPlanet]);
 
   // Navigation functions
-  const navigateTo = (newView, newUwp = null) => {
-    const url = buildUrl(newView, newUwp);
+  const navigateTo = (newView: ViewType, newUwp: string | null = null) => {
+    const url = buildUrl(newView === "saved" ? "saved" : newView === "settings" ? "settings" : newView === "planet" ? "planet" : "decoder", newUwp);
     window.history.pushState({ view: newView, uwp: newUwp }, "", url);
     setView(newView);
     setMenuOpen(false);
@@ -125,21 +140,21 @@ export default function App() {
   const resetDecoder = () => {
     setName("");
     setUwp("");
-    setZoneInput(ZONES.GREEN);
+    setZoneInput(ZONES.GREEN as ZoneCode);
     setScanStatus("");
     navigateTo("decoder");
   };
 
-  const loadPlanet = (planet) => {
+  const loadPlanet = (planet: RecentPlanet) => {
     setName(planet.name);
     setUwp(planet.uwp);
-    setZoneInput(planet.zone || ZONES.GREEN);
+    setZoneInput(planet.zone || (ZONES.GREEN as ZoneCode));
     loadPlanetFromRecent(planet);
     navigateTo("planet", planet.uwp);
   };
 
   // OCR Scanner function
-  const handleScan = async (e) => {
+  const handleScan = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -173,7 +188,7 @@ export default function App() {
         const lines = text.split(/[\n\r]+/);
         const uwpLineIndex = lines.findIndex(line => line.includes(matches[0]));
 
-        let detectedName = null;
+        let detectedName: string | null = null;
 
         if (uwpLineIndex >= 0) {
           const maxLine = Math.min(uwpLineIndex + OCR_SETTINGS.NAME_SEARCH_LINES, lines.length);
@@ -197,8 +212,8 @@ export default function App() {
 
         if (!detectedName) {
           const capsPattern = /\b([A-Z][A-Za-z'-]{2,}(?:\s+[A-Z][A-Za-z'-]+)*)\b/g;
-          const capsMatches = textAfter.match(capsPattern) || [];
-          const filtered = capsMatches.filter(w =>
+          const capsMatches: string[] = textAfter.match(capsPattern) || [];
+          const filtered = capsMatches.filter((w: string) =>
             w.length >= OCR_SETTINGS.NAME_MIN_LENGTH &&
             w.length <= OCR_SETTINGS.NAME_MAX_LENGTH &&
             !isCommonWord(w)
@@ -310,7 +325,7 @@ export default function App() {
       {...commonProps}
       uwp={uwp}
       setUwp={setUwp}
-      parsed={parsed}
+      parsed={!!parsed}
       scanning={scanning}
       scanStatus={scanStatus}
       fileInputRef={fileInputRef}

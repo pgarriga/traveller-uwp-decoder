@@ -1,3 +1,5 @@
+import type { ThemeConfig } from "../types/theme";
+
 // UI colors reutilizables
 export const COLORS = {
   primary: "#3b82f6",
@@ -9,7 +11,7 @@ export const COLORS = {
   pink: "#ec4899",
   indigo: "#6366f1",
   rose: "#f43f5e",
-};
+} as const;
 
 // Section colors por tipo de dato UWP
 export const SECTION_COLORS = {
@@ -21,10 +23,10 @@ export const SECTION_COLORS = {
   government: COLORS.pink,
   lawLevel: COLORS.rose,
   techLevel: COLORS.indigo,
-};
+} as const;
 
 // Theme colors
-export const THEMES = {
+export const THEMES: ThemeConfig = {
   dark: {
     bg: "#0f172a",
     bgCard: "#1e293b",
@@ -45,4 +47,4 @@ export const THEMES = {
     border: "#cbd5e1",
     navBg: "#ffffff",
   }
-};
+} as const;

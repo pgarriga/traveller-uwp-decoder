@@ -5,7 +5,7 @@ export const MAX_RECENT_PLANETS = 20;
 
 // Common words to filter out when detecting planet names from OCR
 // These are typically headers, labels, or game terminology
-export const OCR_COMMON_WORDS = new Set([
+export const OCR_COMMON_WORDS: ReadonlySet<string> = new Set([
   // Articles and prepositions
   "THE", "AND", "FOR", "WITH", "FROM", "OF", "TO", "IN", "ON", "AT",
 
@@ -31,7 +31,7 @@ export const OCR_COMMON_WORDS = new Set([
 ]);
 
 // Check if a word should be filtered out
-export const isCommonWord = (word) => {
+export const isCommonWord = (word: string): boolean => {
   return OCR_COMMON_WORDS.has(word.toUpperCase());
 };
 
@@ -46,4 +46,4 @@ export const OCR_SETTINGS = {
   // Min/max length for detected planet names
   NAME_MIN_LENGTH: 2,
   NAME_MAX_LENGTH: 35,
-};
+} as const;

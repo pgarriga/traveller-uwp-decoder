@@ -1,10 +1,32 @@
+import type { FC, ChangeEvent, RefObject } from "react";
+import type { Theme } from "../types/theme";
+import type { TranslationFunction } from "../types/i18n";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { Button } from "../components/ui/Button";
 import { IconCamera } from "../components/icons";
 import { COLORS } from "../constants/colors";
 
-export const DecoderView = ({
+type ViewType = "decoder" | "saved" | "settings" | "planet";
+
+interface DecoderViewProps {
+  theme: Theme;
+  uwp: string;
+  setUwp: (uwp: string) => void;
+  parsed: boolean;
+  scanning: boolean;
+  scanStatus: string;
+  fileInputRef: RefObject<HTMLInputElement | null>;
+  handleScan: (e: ChangeEvent<HTMLInputElement>) => void;
+  view: ViewType;
+  resetDecoder: () => void;
+  navigateTo: (view: ViewType, uwp?: string) => void;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  t: TranslationFunction;
+}
+
+export const DecoderView: FC<DecoderViewProps> = ({
   theme,
   uwp,
   setUwp,

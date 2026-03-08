@@ -1,29 +1,38 @@
-import { Component } from "react";
+import { Component, ReactNode, ErrorInfo } from "react";
 import { COLORS } from "../constants/colors";
 
-export class ErrorBoundary extends Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
-  handleReload = () => {
+  handleReload = (): void => {
     window.location.reload();
   };
 
-  handleReset = () => {
+  handleReset = (): void => {
     this.setState({ hasError: false, error: null });
   };
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       return (
         <div style={{
@@ -100,7 +109,7 @@ export class ErrorBoundary extends Component {
               </button>
             </div>
 
-            {process.env.NODE_ENV === "development" && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details style={{ marginTop: 24, textAlign: "left" }}>
                 <summary style={{ cursor: "pointer", color: "#94a3b8", fontSize: 12 }}>
                   Detalles del error (desarrollo)

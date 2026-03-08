@@ -1,16 +1,21 @@
+import type { FC, ReactNode, CSSProperties, ButtonHTMLAttributes } from "react";
+import type { Theme } from "../../types/theme";
 import { COLORS } from "../../constants/colors";
 
-/**
- * Button component with multiple variants
- * @param {Object} props
- * @param {'primary'|'secondary'|'ghost'|'nav'|'danger'|'option'} variant
- * @param {'sm'|'md'|'lg'} size
- * @param {boolean} active - For nav/option buttons, shows selected state
- * @param {boolean} disabled
- * @param {boolean} fullWidth
- * @param {Object} theme - Theme object for colors
- */
-export const Button = ({
+type ButtonVariant = "primary" | "secondary" | "ghost" | "nav" | "nav-mobile" | "danger" | "option" | "icon";
+type ButtonSize = "sm" | "md" | "lg" | "xl";
+
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "style"> {
+  children: ReactNode;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  active?: boolean;
+  fullWidth?: boolean;
+  theme?: Theme;
+  style?: CSSProperties;
+}
+
+export const Button: FC<ButtonProps> = ({
   children,
   variant = "primary",
   size = "md",
@@ -21,14 +26,14 @@ export const Button = ({
   style = {},
   ...props
 }) => {
-  const sizes = {
+  const sizes: Record<ButtonSize, { padding: string; fontSize: number }> = {
     sm: { padding: "8px 12px", fontSize: 12 },
     md: { padding: "10px 16px", fontSize: 14 },
     lg: { padding: "16px 20px", fontSize: 16 },
     xl: { padding: "24px 20px", fontSize: 18 },
   };
 
-  const getVariantStyles = () => {
+  const getVariantStyles = (): CSSProperties => {
     switch (variant) {
       case "primary":
         return {
@@ -77,7 +82,7 @@ export const Button = ({
           background: "transparent",
           color: theme?.textDimmed,
           border: "none",
-          padding: 8,
+          padding: "8px",
         };
       default:
         return {

@@ -1,16 +1,33 @@
 import { useState, useEffect } from "react";
+import type { Theme, ThemeMode } from "../types/theme";
 import { THEMES } from "../constants/colors";
 
 const STORAGE_KEY = "traveller-theme";
 
-export const useThemeMode = () => {
-  const [themeMode, setThemeMode] = useState("auto");
+interface UseThemeModeReturn {
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
+  theme: Theme;
+}
+
+// Helper to get the actual theme based on mode
+const getSystemTheme = (): "dark" | "light" => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
+
+const getTheme = (mode: ThemeMode): Theme => {
+  const actualTheme = mode === "auto" ? getSystemTheme() : mode;
+  return THEMES[actualTheme];
+};
+
+export const useThemeMode = (): UseThemeModeReturn => {
+  const [themeMode, setThemeMode] = useState<ThemeMode>("auto");
 
   // Load theme from localStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem(STORAGE_KEY);
     if (savedTheme && ["auto", "dark", "light"].includes(savedTheme)) {
-      setThemeMode(savedTheme);
+      setThemeMode(savedTheme as ThemeMode);
     }
   }, []);
 
@@ -37,14 +54,4 @@ export const useThemeMode = () => {
   }, [themeMode]);
 
   return { themeMode, setThemeMode, theme: getTheme(themeMode) };
-};
-
-// Helper to get the actual theme based on mode
-const getSystemTheme = () => {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-};
-
-const getTheme = (mode) => {
-  const actualTheme = mode === "auto" ? getSystemTheme() : mode;
-  return THEMES[actualTheme];
 };

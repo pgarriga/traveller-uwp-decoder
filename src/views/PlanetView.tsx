@@ -1,3 +1,8 @@
+import type { FC, ChangeEvent } from "react";
+import type { Theme } from "../types/theme";
+import type { TranslationFunction, Language } from "../types/i18n";
+import type { ZoneCode, StarportClass } from "../types/uwp";
+import type { StarportData, SizeData, AtmosphereData, GovernmentData } from "../types/game-data";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { Section } from "../components/ui/Section";
@@ -14,7 +19,45 @@ import {
 } from "../constants/gameRules";
 import { requiresWarning } from "../utils/i18n-helpers";
 
-export const PlanetView = ({
+type ViewType = "decoder" | "saved" | "settings" | "planet";
+
+interface ParsedUWP {
+  sp: StarportClass;
+  sz: number;
+  at: number;
+  hy: number;
+  po: number;
+  go: number;
+  la: number;
+  tl: number;
+}
+
+interface PlanetViewProps {
+  theme: Theme;
+  parsed: ParsedUWP | null;
+  uwp: string;
+  name: string;
+  setName: (name: string) => void;
+  zoneInput: ZoneCode;
+  setZoneInput: (zone: ZoneCode) => void;
+  view: ViewType;
+  resetDecoder: () => void;
+  navigateTo: (view: ViewType) => void;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  t: TranslationFunction;
+  lang: Language;
+  STARPORT: Record<StarportClass, StarportData>;
+  SIZE: SizeData[];
+  ATMO: AtmosphereData[];
+  HYDRO: string[];
+  POP: string[];
+  GOV: GovernmentData[];
+  LAW_WEAPONS: string[];
+  LAW_ARMOR: string[];
+}
+
+export const PlanetView: FC<PlanetViewProps> = ({
   theme,
   parsed,
   uwp,
@@ -39,7 +82,7 @@ export const PlanetView = ({
   LAW_ARMOR
 }) => {
   // Zone display name helper
-  const getZoneName = (zone) => {
+  const getZoneName = (zone: ZoneCode): string => {
     if (zone === ZONES.RED) return lang === "es" ? "Roja" : "Red";
     if (zone === ZONES.AMBER) return lang === "es" ? "Ámbar" : "Amber";
     return t("zoneGreen");
@@ -69,7 +112,7 @@ export const PlanetView = ({
             className="planet-name"
             aria-label={t("planetName") || "Planet name"}
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             placeholder={t("unnamed")}
             style={{
               background: "transparent",
@@ -88,7 +131,7 @@ export const PlanetView = ({
             <span style={{ fontFamily: "monospace", fontSize: 16, color: theme.textMuted, letterSpacing: 2 }}>{uwp.toUpperCase()}</span>
             <select
               value={zoneInput}
-              onChange={e => setZoneInput(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setZoneInput(e.target.value as ZoneCode)}
               style={{
                 background: getZoneColor(zoneInput) + "33",
                 border: `1px solid ${getZoneColor(zoneInput)}`,

@@ -1,7 +1,8 @@
 # Traveller UWP Decoder
 
-[![Version](https://img.shields.io/badge/Version-1.2.3-blue?style=flat-square)](https://github.com/pgarriga/traveller-uwp-decoder)
+[![Version](https://img.shields.io/badge/Version-1.5.0-blue?style=flat-square)](https://github.com/pgarriga/traveller-uwp-decoder)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tesseract.js](https://img.shields.io/badge/Tesseract.js-7.0-4285F4?style=flat-square&logo=google&logoColor=white)](https://tesseract.projectnaptha.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
@@ -105,7 +106,8 @@ A UWP code consists of 8 characters in the format: `XNNNNNN-N`
 | Technology | Purpose |
 |------------|---------|
 | [React 19](https://react.dev/) | UI Framework |
-| [Vite 6](https://vitejs.dev/) | Build Tool & Dev Server |
+| [TypeScript 5](https://www.typescriptlang.org/) | Type Safety |
+| [Vite 7](https://vitejs.dev/) | Build Tool & Dev Server |
 | [Tesseract.js 7](https://tesseract.projectnaptha.com/) | OCR Engine |
 
 ## Internationalization
@@ -121,10 +123,18 @@ All UI elements, labels, and game data are fully translated.
 
 ```
 src/
-├── App.jsx      # Main application component
-├── i18n.js      # Translations and game data
-├── index.css    # Global styles
-└── main.jsx     # Entry point
+├── components/     # Reusable UI components
+│   ├── icons/      # SVG icon components
+│   └── ui/         # Button, Section, Row, Badge
+├── constants/      # Colors, zones, game rules
+├── hooks/          # Custom React hooks
+├── i18n/           # Translations and game data
+├── types/          # TypeScript type definitions
+├── utils/          # Helper functions
+├── views/          # Page components
+├── App.tsx         # Main application component
+├── index.css       # Global styles
+└── main.tsx        # Entry point
 ```
 
 ## Contributing

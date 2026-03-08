@@ -1,7 +1,9 @@
+import type { TranslationFunction } from "../types/i18n";
+
 // i18n helper functions
 
 // Known "none" values across all supported languages
-const NONE_VALUES = new Set([
+const NONE_VALUES: ReadonlySet<string> = new Set([
   "none",
   "ninguno",
   "ninguna",
@@ -16,11 +18,11 @@ const NONE_VALUES = new Set([
  * Check if a value represents "none" in any supported language
  * Use this instead of comparing against multiple hardcoded strings
  *
- * @param {string} value - The value to check
- * @param {function} t - Optional translation function to also check t("none")
- * @returns {boolean} - True if the value means "none"
+ * @param value - The value to check
+ * @param t - Optional translation function to also check t("none")
+ * @returns True if the value means "none"
  */
-export const isNoneValue = (value, t = null) => {
+export const isNoneValue = (value: string | null | undefined, t: TranslationFunction | null = null): boolean => {
   if (!value) return true;
 
   const normalized = value.toString().toLowerCase().trim();
@@ -41,6 +43,6 @@ export const isNoneValue = (value, t = null) => {
  * Check if equipment/contraband requires a warning
  * Returns true if the value is NOT "none" (i.e., something is required/banned)
  */
-export const requiresWarning = (value, t = null) => {
+export const requiresWarning = (value: string | null | undefined, t: TranslationFunction | null = null): boolean => {
   return !isNoneValue(value, t);
 };

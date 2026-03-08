@@ -1,17 +1,32 @@
+import type { FC } from "react";
 import { useEffect, useRef } from "react";
+import type { Theme } from "../types/theme";
+import type { TranslationFunction } from "../types/i18n";
 import { IconCamera, IconClock, IconSettings, IconMenu, IconClose } from "./icons";
 import { Button } from "./ui/Button";
 import { COLORS } from "../constants/colors";
 
-export const Navbar = ({ theme, view, resetDecoder, navigateTo, menuOpen, setMenuOpen, t }) => {
-  const menuRef = useRef(null);
-  const toggleRef = useRef(null);
+type ViewType = "decoder" | "saved" | "settings" | "planet";
+
+interface NavbarProps {
+  theme: Theme;
+  view: ViewType;
+  resetDecoder: () => void;
+  navigateTo: (view: ViewType) => void;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  t: TranslationFunction;
+}
+
+export const Navbar: FC<NavbarProps> = ({ theme, view, resetDecoder, navigateTo, menuOpen, setMenuOpen, t }) => {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   // Handle Escape key to close menu
   useEffect(() => {
     if (!menuOpen) return;
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMenuOpen(false);
         toggleRef.current?.focus();
@@ -29,10 +44,10 @@ export const Navbar = ({ theme, view, resetDecoder, navigateTo, menuOpen, setMen
     const focusableElements = menuRef.current.querySelectorAll("button");
     if (focusableElements.length === 0) return;
 
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-    const handleTabKey = (e) => {
+    const handleTabKey = (e: KeyboardEvent) => {
       if (e.key !== "Tab") return;
 
       if (e.shiftKey && document.activeElement === firstElement) {

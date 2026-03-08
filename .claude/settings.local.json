@@ -16,7 +16,9 @@
       "Bash(npm version:*)",
       "Bash(xargs ls:*)",
       "Bash(wc:*)",
-      "Bash(npx sharp-cli:*)"
+      "Bash(npx sharp-cli:*)",
+      "Bash(npx tsc:*)",
+      "Bash(grep:*)"
     ]
   }
 }

@@ -38,7 +38,10 @@ Review the codebase for accessibility issues following WCAG 2.1 guidelines.
 4. Form validation is accessible
 
 ## Review Files
-- `src/App.jsx` - Check all components
+- `src/App.tsx` - Main application component
+- `src/components/Navbar.tsx` - Navigation accessibility
+- `src/components/icons/index.tsx` - Icon aria-hidden
+- `src/views/*.tsx` - All view components
 - `src/index.css` - Check focus styles exist
 
 ## Checklist

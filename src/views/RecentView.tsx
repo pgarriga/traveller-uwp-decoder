@@ -1,10 +1,30 @@
+import type { FC, MouseEvent } from "react";
+import type { Theme } from "../types/theme";
+import type { TranslationFunction } from "../types/i18n";
+import type { RecentPlanet } from "../types/uwp";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { Button } from "../components/ui/Button";
 import { IconTrash } from "../components/icons";
 import { getZoneColor } from "../constants/zones";
 
-export const RecentView = ({
+type ViewType = "decoder" | "saved" | "settings" | "planet";
+
+interface RecentViewProps {
+  theme: Theme;
+  recentPlanets: RecentPlanet[];
+  loadPlanet: (planet: RecentPlanet) => void;
+  deletePlanet: (uwp: string) => void;
+  clearAllPlanets: () => void;
+  view: ViewType;
+  resetDecoder: () => void;
+  navigateTo: (view: ViewType) => void;
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  t: TranslationFunction;
+}
+
+export const RecentView: FC<RecentViewProps> = ({
   theme,
   recentPlanets,
   loadPlanet,
@@ -72,7 +92,7 @@ export const RecentView = ({
               <Button
                 variant="icon"
                 theme={theme}
-                onClick={(e) => { e.stopPropagation(); deletePlanet(planet.uwp); }}
+                onClick={(e: MouseEvent) => { e.stopPropagation(); deletePlanet(planet.uwp); }}
                 aria-label={t("delete") || "Delete"}
               >
                 <IconTrash />
