@@ -103,7 +103,7 @@ export const PlanetView: FC<PlanetViewProps> = ({
         setMenuOpen={setMenuOpen}
         t={t}
       />
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
         {/* Planet header */}
         <div style={{ background: theme.bgHeader, borderRadius: 12, padding: 20, marginBottom: 16, textAlign: "center" }}>
           <label htmlFor="planet-name" className="sr-only">{t("planetName") || "Planet name"}</label>
@@ -268,7 +268,7 @@ export const PlanetView: FC<PlanetViewProps> = ({
         </div>
 
         <Footer theme={theme} t={t} />
-      </div>
+      </main>
     </div>
   );
 };

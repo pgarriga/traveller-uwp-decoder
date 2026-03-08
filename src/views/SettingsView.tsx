@@ -44,7 +44,7 @@ export const SettingsView: FC<SettingsViewProps> = ({
       setMenuOpen={setMenuOpen}
       t={t}
     />
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
+    <main style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
       <h1 style={{ margin: "0 0 24px", fontSize: 24, fontWeight: 800 }}>{t("settings")}</h1>
 
       <div style={{ background: theme.bgCard, borderRadius: 12, padding: 20, marginBottom: 16, border: `1px solid ${theme.border}` }}>
@@ -90,6 +90,6 @@ export const SettingsView: FC<SettingsViewProps> = ({
       </div>
 
       <Footer theme={theme} t={t} showVersion />
-    </div>
+    </main>
   </div>
 );

@@ -52,7 +52,7 @@ export const DecoderView: FC<DecoderViewProps> = ({
       setMenuOpen={setMenuOpen}
       t={t}
     />
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
+    <main style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
         <div style={{ fontSize: 11, color: COLORS.warning, letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>{t("subtitle")}</div>
         <h1 className="app-title">
@@ -136,6 +136,6 @@ export const DecoderView: FC<DecoderViewProps> = ({
       </div>
 
       <Footer theme={theme} t={t} />
-    </div>
+    </main>
   </div>
 );

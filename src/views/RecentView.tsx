@@ -47,7 +47,7 @@ export const RecentView: FC<RecentViewProps> = ({
       setMenuOpen={setMenuOpen}
       t={t}
     />
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
+    <main style={{ maxWidth: 720, margin: "0 auto", padding: "20px 16px" }}>
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: theme.text }}>
@@ -103,6 +103,6 @@ export const RecentView: FC<RecentViewProps> = ({
       )}
 
       <Footer theme={theme} t={t} />
-    </div>
+    </main>
   </div>
 );
