@@ -18,7 +18,8 @@
       "Bash(wc:*)",
       "Bash(npx sharp-cli:*)",
       "Bash(npx tsc:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(claude doctor:*)"
     ]
   }
 }
