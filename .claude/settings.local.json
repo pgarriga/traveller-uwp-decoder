@@ -19,7 +19,10 @@
       "Bash(npx sharp-cli:*)",
       "Bash(npx tsc:*)",
       "Bash(grep:*)",
-      "Bash(claude doctor:*)"
+      "Bash(claude doctor:*)",
+      "Skill(sync-version)",
+      "Bash(git pull *)",
+      "Skill(update-config)"
     ]
   }
 }

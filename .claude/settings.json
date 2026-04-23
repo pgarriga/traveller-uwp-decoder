@@ -1,0 +1,39 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); echo \"$f\" | grep -qE '\\.(ts|tsx)$' || exit 0; output=$(npx tsc --noEmit 2>&1); [ -z \"$output\" ] && exit 0; echo \"$output\" | head -30; exit 2",
+            "statusMessage": "Verificando tipos TypeScript...",
+            "asyncRewake": true,
+            "rewakeMessage": "TypeScript type check failed:",
+            "rewakeSummary": "TypeScript errors found"
+          },
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); echo \"$f\" | grep -qE 'src/(views|components)/.*\\.tsx$' || exit 0; echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"UI file modified. Run /check-responsive and /check-a11y before marking the task as complete.\"}}'",
+            "statusMessage": "Comprobando cambios UI..."
+          },
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); echo \"$f\" | grep -q 'package\\.json' || exit 0; echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"package.json modified. Run /update-badges to sync README.md badges.\"}}'",
+            "statusMessage": "Comprobando package.json..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); echo \"$cmd\" | grep -q 'npm version' || exit 0; echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"Version bumped. Run /sync-version to sync the version across all project files.\"}}'",
+            "statusMessage": "Comprobando npm version..."
+          }
+        ]
+      }
+    ]
+  }
+}
